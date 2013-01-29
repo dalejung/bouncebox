@@ -12,6 +12,7 @@ class Logger(component.Component):
         self.series = series
         self.event_types = event_types
         self.data = {}
+        self.all_events = []
 
         self._add_bindings()
 
@@ -37,6 +38,7 @@ class Logger(component.Component):
         key = self.get_key(event)
         lst = self.data.setdefault(key, [])
         lst.append(event)
+        self.all_events.append(event)
 
 class MiddleLogger(Logger):
 
