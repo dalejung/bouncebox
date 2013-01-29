@@ -12,7 +12,7 @@ class ComponentBox(Component):
 
     def start_box(self, mode='auto', interactive=False):
         """
-            Starts the trade box and calls start on the sources
+            Starts the bounce box and calls start on the sources
         """
         if len(self.sources) == 0:
            print "No Sources Attached. Exiting..."
@@ -79,7 +79,7 @@ class ComponentBox(Component):
     
     def end_box(self):
         """
-            Starts the trade box and calls start on the sources
+            Let everyone know the box is done
         """
         self.end_hooks.fire(EndEvent())
 

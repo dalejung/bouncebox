@@ -52,7 +52,7 @@ class BaseComponent(PublishingElement):
         self.router.bind(key, callback, exchange)
 
     def send(self, message):
-        # note that front isn't always a tradebox
+        # note that front isn't always a bouncebox
         self.front.router.send(message)
 
 import functools
@@ -177,7 +177,7 @@ class ListeningComponent(SeriesComponent):
         """
         Will extend current listeners with one of a component.
         Useful when adding a sub-component since a parent
-        component has no awareness of front(tradebox) until
+        component has no awareness of front(bouncebox) until
         it itself is added. which happens after init
         """
         callbacks = self.process_callbacks(component)

@@ -5,8 +5,8 @@ from bouncebox.util import Object
 class Event(Object):
     repr_attrs = ['timestamp']
 
-    # Protect the name here
-    locked = False
+    # check __setattr__ immutable == True means immutable
+    immutable = False
 
     def __init__(self, timestamp=None, source_event=None, series=None):
         self.generated = datetime.now()
@@ -15,18 +15,18 @@ class Event(Object):
             timestamp = source_event.timestamp
         self.timestamp = timestamp
         self.series = series
-        self.locked = True
+        self.immutable = True
 
     def ___setattr__(self, name, value):
         # events are immutable
-        if self.locked:
+        if self.immutable:
             assert False, 'boo'
         super(Event, self).__setattr__(name, value) 
 
 
 # Would like this switchable? Eventually remove non cython version?
 try: 
-    from tradeexpression.core.event_cython import Event
+    from bouncebox.core.event_cython import Event
 except:
     print 'No cython Event'
 
@@ -55,6 +55,6 @@ class EndEvent(Event):
 
 class StartEvent(Event):
     """
-        Used to signal to tradebox that it is beginning. 
+        Used to signal to bouncebox that it is beginning. 
     """
     graphable = False 
