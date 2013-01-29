@@ -1,13 +1,15 @@
-from bouncebox.core.base import Component
+from bouncebox.core.component import Component
 from bouncebox.core.errors import EndOfSources
 from bouncebox.core.event import EndEvent
 
-class ComponentBox(Component):
+__all__ = ['BounceBox']
+
+class BounceBox(Component):
     """
         This class contains everything
     """
     def __init__(self):
-        super(ComponentBox, self).__init__()
+        super(BounceBox, self).__init__()
         self.sources = []
 
     def start_box(self, mode='auto', interactive=False):
@@ -72,6 +74,8 @@ class ComponentBox(Component):
                 event = next(source)
                 return event
         except StopIteration:
+            # send End event
+            self.end_box()
             raise EndOfSources
 
     def __iter__(self):
@@ -87,10 +91,9 @@ class ComponentBox(Component):
         self.router.send(message)
 
     def add_component(self, component):
-        # sources are iterable
         if hasattr(component, 'end'):
             self.end_hooks += component.end
-        super(ComponentBox, self).add_component(component)
+        super(BounceBox, self).add_component(component)
 
     def add_source(self, component):
         self.sources.append(component)

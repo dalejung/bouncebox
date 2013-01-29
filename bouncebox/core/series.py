@@ -8,16 +8,12 @@ Series Notes:
 """
 #TODO Series hash isn't crossplatform atm. per computer it is
 # the same but not guaranteed if we were to start networking
-from functools import partial
-
-from bouncebox.core.event import Event, EventFactory
-
 from bouncebox.util import base_repr   
 from bouncebox.util import generate_id
 
 class EventSeries(object):
     """
-        Series are a series of events. 
+        EventSeries are a series of events. 
         Basically what ties events together into groups
     """
     event_cls = None
@@ -63,41 +59,8 @@ class TimeSeries(EventSeries):
     """
     uniform = True
 
-class SeriesEventFactory(EventFactory):
-    """
-        Takes in a Series object and generates events based of those
-    """
-    def __init__(self, series):
-        self.series = series
-        self.event_cls = series.event_cls
-        self.event_args = series.event_args
-        self.create_event_func()
-        super(SeriesEventFactory, self).__init__(series.event_cls)
-
-    def create_event_func(self):
-        kw = {}
-        kw['series'] = self.series
-        for arg in self.event_args:
-            kw[arg] = getattr(self.series, arg)
-        func = partial(self._build_event, **kw)
-        self.build_event = func
-
-    def _build_event(self, *args, **kwargs):
-        event = self.event_cls(*args, **kwargs)
-        return event
-
-class SeriesEvent(Event):
-    """
-        Generic Event that auto makes it's own series. 
-        TODO:Could backport to Event object? 
-    """
-    def __init__(self, *args, **kwargs):
-        series = create_series(self.__class__)
-        super(SeriesEvent, self).__init__(series=series, *args, **kwargs)
-
 def create_series(event_cls):
     series = EventSeries()
     series.event_cls = event_cls
     series.label_name = event_cls.__name__ + ' series(auto)'
     return series
-

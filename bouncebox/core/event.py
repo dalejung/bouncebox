@@ -1,6 +1,8 @@
 from datetime import datetime
+from functools import partial
 
 from bouncebox.util import Object
+from  bouncebox.core.series import create_series
 
 class Event(Object):
     repr_attrs = ['timestamp']
@@ -14,6 +16,10 @@ class Event(Object):
         if timestamp is None and source_event:
             timestamp = source_event.timestamp
         self.timestamp = timestamp
+
+        # this is the most inefficient Series generation
+        if series is None:
+            series = create_series(self.__class__)
         self.series = series
         self.immutable = True
 
@@ -35,6 +41,15 @@ class SourceEvent(Event):
         Would like to disintuish events that are generated externally
     """
 
+class EndEvent(Event):
+    graphable = False 
+
+class StartEvent(Event):
+    """
+        Used to signal to bouncebox that it is beginning. 
+    """
+    graphable = False 
+
 class EventFactory(object):
     """
         Events should come from some sort of factory. 
@@ -50,11 +65,25 @@ class EventFactory(object):
         event.factory = self
         return event
 
-class EndEvent(Event):
-    graphable = False 
+class SeriesEventFactory(EventFactory):
+    """
+        Takes in a Series object and generates events based of those
+    """
+    def __init__(self, series):
+        self.series = series
+        self.event_cls = series.event_cls
+        self.event_args = series.event_args
+        self.create_event_func()
+        super(SeriesEventFactory, self).__init__(series.event_cls)
 
-class StartEvent(Event):
-    """
-        Used to signal to bouncebox that it is beginning. 
-    """
-    graphable = False 
+    def create_event_func(self):
+        kw = {}
+        kw['series'] = self.series
+        for arg in self.event_args:
+            kw[arg] = getattr(self.series, arg)
+        func = partial(self._build_event, **kw)
+        self.build_event = func
+
+    def _build_event(self, *args, **kwargs):
+        event = self.event_cls(*args, **kwargs)
+        return event

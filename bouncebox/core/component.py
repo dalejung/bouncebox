@@ -1,10 +1,11 @@
 from collections import Iterable
+import functools
 
 from bouncebox.core.event import EndEvent
 from bouncebox.core.element import PublishingElement
 from bouncebox.core.dispatch import Router
 
-from bouncebox.utils import generate_id, EventHook
+from bouncebox.util import generate_id, EventHook
 
 class BaseComponent(PublishingElement):
     """
@@ -55,7 +56,6 @@ class BaseComponent(PublishingElement):
         # note that front isn't always a bouncebox
         self.front.router.send(message)
 
-import functools
 def add_component_hook(func):
     """
         Ideally this decorator will take a method and add it 
@@ -194,3 +194,37 @@ class Source(Component):
     def __init__(self):
         super(Source, self).__init__()
 
+class EventBroadcaster(Component):
+    """
+        Will wrap an iter that returns events.
+        This will let us broadcast it
+    """
+    #implements(IBacktestSource)
+    def __init__(self, source):
+        self.iter = iter(source)
+        super(EventBroadcaster, self).__init__()
+
+    def start(self, _event=None):
+        while self.send_next():
+            pass
+
+    def send_next(self):
+        """
+        send next should never be overriden. 
+        always ensure that the event broadcasted 
+        is the same as next()
+        """
+        try:
+            event = next(self)
+            self.broadcast(event)
+            return event
+        except StopIteration:
+            return False
+
+    def next(self):
+        """ Iterator Interface"""
+        event = next(self.iter)
+        return event
+
+    def __iter__(self):
+        return iter(self.iter)
