@@ -12,16 +12,19 @@ class BounceBox(Component):
         super(BounceBox, self).__init__()
         self.sources = []
 
-    def start_box(self, mode='auto', interactive=False):
+    def start_box(self, autorun=True, interactive=False):
         """
             Starts the bounce box and calls start on the sources
+
+            autorun: iterate through sources until completion
+            interactive: starts prompt
         """
         if len(self.sources) == 0:
            print "No Sources Attached. Exiting..."
            return
         if interactive:
             self.start_interactive()
-        elif mode == 'auto':
+        elif autorun:
             self.start_auto()
 
     def start_auto(self):
