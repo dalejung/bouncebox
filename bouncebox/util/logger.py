@@ -40,6 +40,11 @@ class Logger(component.Component):
         lst.append(event)
         self.all_events.append(event)
 
+    def __repr__(self):
+        out = []
+        out.append(self.__class__.__name__)
+        return '\n'.join(out)
+
 class MiddleLogger(Logger):
 
     def __init__(self):
