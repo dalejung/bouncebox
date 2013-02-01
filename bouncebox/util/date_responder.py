@@ -98,15 +98,24 @@ class DateResponder(bb.Component):
     def check_date(self, date):
         return self.dr.check_date(date)
 
-    def handle_event(self, event):
+    def process_event(self, event):
         date = event.timestamp.date()
-        matches = self.dr.check_date(date)
-        if matches is not None:
-            self.date_match(matches, event)
+        matches = self.check_date(date)
+        if matches is None:
+            return
+        new_evt = self.date_match(matches, event)
+        if new_evt is not None:
+            return new_evt
+
+    def handle_event(self, event):
+        new_evt = self.process_event(event)
+        if new_evt:
+            self.broadcast(new_evt)
 
     def date_match(self, matches, event):
+        """ Override this function to create new event """
         evt = DateMatchEvent(event.timestamp, matches)
-        self.broadcast(evt)
+        return evt
 
 class DateMatchEvent(bb.Event):
     """
