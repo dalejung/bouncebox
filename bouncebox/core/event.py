@@ -6,6 +6,7 @@ from  bouncebox.core.series import create_series
 
 class Event(Object):
     repr_attrs = ['timestamp']
+    _class_series = None
 
     # check __setattr__ immutable == True means immutable
     immutable = False
@@ -17,16 +18,17 @@ class Event(Object):
             timestamp = source_event.timestamp
         self.timestamp = timestamp
 
-        # this is the most inefficient Series generation
         if series is None:
-            series = create_series(self.__class__)
+            series = self.__class__.class_series()
         self.series = series
         self.immutable = True
 
     @classmethod
     def class_series(self):
         # quick way to get default series
-        return create_series(self)
+        if self._class_series is None:
+            self._class_series = create_series(self)
+        return self._class_series
 
     def ___setattr__(self, name, value):
         # events are immutable
