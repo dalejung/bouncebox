@@ -23,6 +23,11 @@ class Event(Object):
         self.series = series
         self.immutable = True
 
+    @classmethod
+    def class_series(self):
+        # quick way to get default series
+        return create_series(self)
+
     def ___setattr__(self, name, value):
         # events are immutable
         if self.immutable:
