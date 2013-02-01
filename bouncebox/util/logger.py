@@ -91,7 +91,7 @@ def install_ipython_completers():  # pragma: no cover
 
     @complete_object.when_type(Logger)
     def complete_logger(obj, prev_completions):
-        return [c for c in obj.data.keys() \
+        return ['all_events'] + [c for c in obj.data.keys() \
                     if isinstance(c, basestring) and py3compat.isidentifier(c)]                                          
 # Importing IPython brings in about 200 modules, so we want to avoid it unless
 # we're in IPython (when those modules are loaded anyway).
