@@ -17,6 +17,11 @@ import numpy as np
 
 import bouncebox.core.api as bb
 
+def _date_array(arr):
+    if arr.dtype.type == np.datetime64:
+        return True
+    return False
+
 class DateMatcher(object):
     """
         param
@@ -24,6 +29,8 @@ class DateMatcher(object):
         callback: called when next date match occurs
     """
     def __init__(self, dates, callback):
+        if not _date_array(dates):
+            raise Exception("dates must be DatetimeIndex")
         self.dates = dates
         self.callback = callback
         self.current = 0
@@ -61,6 +68,10 @@ class DateResponder(bb.Component):
 
         if dates is None:
             dates = trans.index
+
+        if not _date_array(dates):
+            raise Exception("dates must be DatetimeIndex")
+
         self.dates = dates
         self.dr = DateMatcher(self.dates, self.handle_date_match)
 
@@ -83,6 +94,9 @@ class DateResponder(bb.Component):
         else:
             self.values = trans.reset_index()
             self.handle_date_match = lambda matches: self.values.ix[matches]
+
+    def check_date(self, date):
+        return self.dr.check_date(date)
 
     def handle_event(self, event):
         date = event.timestamp.date()
