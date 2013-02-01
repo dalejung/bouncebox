@@ -62,5 +62,5 @@ class TimeSeries(EventSeries):
 def create_series(event_cls):
     series = EventSeries()
     series.event_cls = event_cls
-    series.label_name = event_cls.__name__ + ' series(auto)'
+    series.label_name = event_cls.__name__ + '_series'
     return series

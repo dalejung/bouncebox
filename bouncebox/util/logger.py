@@ -40,9 +40,16 @@ class Logger(component.Component):
         lst.append(event)
         self.all_events.append(event)
 
+    def __getattr__(self, key):
+        if key in self.data:
+            return self.data[key]
+        raise AttributeError()
+
     def __repr__(self):
         out = []
         out.append(self.__class__.__name__)
+        for k, v in self.data.iteritems():
+            out.append("{0}: {1} items".format(k, len(v)))
         return '\n'.join(out)
 
 class MiddleLogger(Logger):
@@ -75,3 +82,22 @@ class FileLogger(Logger):
         data = self.series
         pickle.dump(data, self.file, 2)
         self.file.close()
+
+def install_ipython_completers():  # pragma: no cover
+    """Register the DataFrame type with IPython's tab completion machinery, so
+    that it knows about accessing column names as attributes."""
+    from IPython.utils.generics import complete_object
+    from pandas.util import py3compat
+
+    @complete_object.when_type(Logger)
+    def complete_logger(obj, prev_completions):
+        return [c for c in obj.data.keys() \
+                    if isinstance(c, basestring) and py3compat.isidentifier(c)]                                          
+# Importing IPython brings in about 200 modules, so we want to avoid it unless
+# we're in IPython (when those modules are loaded anyway).
+import sys
+if "IPython" in sys.modules:  # pragma: no cover
+    try: 
+        install_ipython_completers()
+    except Exception:
+        pass 
