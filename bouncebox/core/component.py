@@ -18,7 +18,6 @@ class BaseComponent(PublishingElement):
         self.gen_id = generate_id(self)
 
         self.router = Router()
-        self.end_hooks = EventHook()
 
         self.add_component_hooks = EventHook()
         self.components = []

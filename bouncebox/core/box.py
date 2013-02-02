@@ -1,6 +1,8 @@
 from bouncebox.core.component import Component
 from bouncebox.core.errors import EndOfSources
-from bouncebox.core.event import EndEvent
+from bouncebox.core.event import EndEvent, StartEvent
+
+from bouncebox.util import EventHook
 
 __all__ = ['BounceBox']
 
@@ -10,6 +12,8 @@ class BounceBox(Component):
     """
     def __init__(self):
         super(BounceBox, self).__init__()
+        self.end_hooks = EventHook()
+        self.start_hooks = EventHook()
         self.sources = []
 
     def start_box(self, autorun=True, interactive=False):
@@ -22,6 +26,8 @@ class BounceBox(Component):
         if len(self.sources) == 0:
            print "No Sources Attached. Exiting..."
            return
+
+        self.start_hooks.fire(StartEvent())
         if interactive:
             self.start_interactive()
         elif autorun:
@@ -94,8 +100,10 @@ class BounceBox(Component):
         self.router.send(message)
 
     def add_component(self, component):
-        if hasattr(component, 'end'):
-            self.end_hooks += component.end
+        if hasattr(component, 'handle_end_box'):
+            self.end_hooks += component.handle_end_box
+        if hasattr(component, 'handle_start_box'):
+            self.start_hooks += component.handle_start_box
         super(BounceBox, self).add_component(component)
 
     def add_source(self, component):
