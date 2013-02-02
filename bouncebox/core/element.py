@@ -24,13 +24,17 @@ class ListeningElement(Element):
       It merely provides a pathway to process events passed into
       callback_controller
     """
+    listeners = []
     def __init__(self):
         super(ListeningElement, self).__init__()
         self.callback_registry = {}
+        self.obj_listeners = []
+
         self.bind_listeners()
 
     def bind_listeners(self):
-        for event_cls, func_name in self.listeners:
+        listeners = self.listeners + self.obj_listeners
+        for event_cls, func_name in listeners:
             callback = getattr(self, func_name)
             # ListeningElement api
             self.listen(event_cls, callback)

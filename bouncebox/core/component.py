@@ -125,12 +125,10 @@ class ListeningComponent(SeriesComponent):
         Handles the listeners binding to the Router
     """
     # protected names
-    listeners = []
     def __init__(self):
         super(ListeningComponent, self).__init__()
 
         self.add_component_hooks += self.bind_callbacks
-        self.obj_listeners = []
 
     def add_event_listener(self, event_type, callback):
         self.obj_listeners.append((event_type, callback))
