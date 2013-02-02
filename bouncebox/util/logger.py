@@ -4,7 +4,16 @@ import bouncebox.core.component as component
 import bouncebox.core.event as event
 
 class Logger(component.Component):
+    """
+        Class to log events sent to it via the box router. It will default to capturing
+        all events and storing them separately by EventSeries. Logger.all_events will have all
+        events combined in correct order. 
 
+        Paramters
+        ---------
+        series : list of EventSeries
+        event_types : list of classes (default: event.Event)
+    """
     def __init__(self, length=None, series=[], event_types=[event.Event]):
         super(Logger, self).__init__()
 
@@ -53,11 +62,27 @@ class Logger(component.Component):
         return '\n'.join(out)
 
 class MiddleLogger(Logger):
+    """
+        Class for logging only specific components. MiddleLogger will rebroadcast
+        the events so it should not affect the box events. 
 
+        Note
+        ----
+
+        This will only log the events that the component broadcasts itself. It will not log
+        events sent to the component
+
+        Examples
+        --------
+        >>> box.add_component(logger)
+        >>> box.add_component(some_component)
+        >>> logger.log_component(some_component)
+    """
     def __init__(self):
         super(MiddleLogger, self).__init__(None, [], [])
 
     def log_component(self, component):
+        # replace component's broadcast
         component.broadcast = self.handle_events
 
     def handle_events(self, event):
