@@ -16,6 +16,7 @@ import pandas as pd
 import numpy as np
 
 import bouncebox.core.api as bb
+from bouncebox.array import EventBroadcaster
 
 def _date_array(arr):
     if arr.dtype.type == np.datetime64:
@@ -135,7 +136,7 @@ if __name__ == '__main__':
 
     trans = pd.DataFrame({'blah':range(len(dates)), 'high':np.random.randn(len(dates))}, index=dates)
 
-    events = bb.EventBroadcaster([bb.SourceEvent(date) for date in ind])
+    events = EventBroadcaster([bb.SourceEvent(date) for date in ind])
     box = bb.BounceBox()
     box.add_source(events)
 

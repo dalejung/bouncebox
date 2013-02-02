@@ -3,9 +3,9 @@ from unittest import TestCase
 import pandas as pd
 
 import bouncebox.util.date_responder as date_responder
-reload(date_responder)
 from bouncebox.util.date_responder import *
 from bouncebox.util.logger import Logger
+from bouncebox.array import EventBroadcaster
 
 ind = pd.date_range(start="2000-01-01", freq="D", periods=500)
 ind = ind.repeat(3)
@@ -42,7 +42,7 @@ class TestDateResponder(TestCase):
         dates = dates.repeat(3)
 
         trans = pd.DataFrame({'blah':range(len(dates)), 'high':np.random.randn(len(dates))}, index=dates)
-        events = bb.EventBroadcaster([bb.SourceEvent(date) for date in ind])
+        events = EventBroadcaster([bb.SourceEvent(date) for date in ind])
         box = bb.BounceBox()
         box.add_source(events)
 
