@@ -11,13 +11,22 @@ class Middleware(core.Component):
     """
         Component that does passthrough for it's children. 
 
-        When compo
+        Notes
+        -----
+        This is for getting in between parent and child components. If there are no
+        overrides, then the Middleware should habve no effect on the bouncebox.
+        Having multiple children should behave the same as having one Middleware
+        per child. So 1 Middleware -> Many Children should behave like 1 Middle -> 1 Child.
+
+        This means there is NO sibling behaviors. 
+
+        A usecase may be to alter or prohibit events going to children
     """
     def __init__(self):
         super(Middleware, self).__init__()
         self.child_event_callbacks = {}
         self.child_series_bindings = {}
-        self.router.bind(core.Event, self.bubble_up, 'event')
+        self.children = []
 
     def get_event_callbacks(self):
         return list(itertools.chain(*self.child_event_callbacks.values()))
@@ -26,8 +35,14 @@ class Middleware(core.Component):
         return list(itertools.chain(*self.child_series_bindings.values()))
 
     def add_child(self, component, overrides=None):
-        event_callbacks, series_bindings = _get_callbacks(component)
+        """
+            
+        """
+        # we bubble up or rebroadcast child broadcasts
+        component.broadcast = self.bubble_up
 
+        event_callbacks, series_bindings = _get_callbacks(component)
+        # keep track of child callbacks
         self.child_event_callbacks[component] = event_callbacks
         self.child_series_bindings[component] = series_bindings
 
@@ -39,16 +54,11 @@ class Middleware(core.Component):
             for k, callback in series_bindings:
                 self.front.bind(k, callback, 'series')
 
-        super(Middleware, self).add_component(component, contained=True)
+        self.children.append(component)
 
     def add_component(self, component):
         """
-            This should register the child components events. 
-            So that events that Middleware doesn't care about pass through
-            in **both** directions. 
-
-            A child broadcasting an event should make it to the box.router, unless
-            specifically stopped by Middleware
+            see: add_child
         """
         raise NotImplementedError()
 

@@ -36,9 +36,7 @@ class TestMiddleWare(TestCase):
         child.add_event_listener(bc.Event, 'handle_event')
         child.handle_event = MagicMock()
         
-        # add child should be contained=True    
         mid.add_child(child)
-        assert child.front is mid
 
     def test_passthru_down(self):
         parent = bc.Component()
