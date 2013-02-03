@@ -92,7 +92,7 @@ class TestSeriesComponent(TestCase):
         child.handle_a = MagicMock()
         child.handle_b = MagicMock()
 
-        bindings = child.process_bindings(child)
+        bindings = child.get_series_bindings()
         assert len(bindings) == 2
 
         parent.add_component(child)
@@ -126,7 +126,11 @@ class TestBounceBoxComponent(TestCase):
         child.add_event_listener(TestEventA, 'handle_a2')
         child.handle_a2 = MagicMock()
 
+        child.get_event_callbacks = MagicMock(wraps=child.get_event_callbacks)
         parent.add_component(child)
+        # make sure the proper get_event_callbacks is being called
+        # 02-03-13 I was having it call the self i.e. parent
+        assert child.get_event_callbacks.called
         evt_a = TestEventA()
         parent.broadcast(evt_a)
         assert child.handle_a.called
@@ -152,7 +156,7 @@ class TestBounceBoxComponent(TestCase):
         child.add_event_listener(TestEventA, 'handle_a2')
         child.handle_a2 = MagicMock()
 
-        callbacks = child.process_callbacks(child)
+        callbacks = child.get_event_callbacks()
         assert len(callbacks) == 3
         for e, c in callbacks:
             if e is TestEventA:

@@ -7,6 +7,38 @@ from bouncebox.core.dispatch import Router
 
 from bouncebox.util import generate_id, EventHook
 
+def _get_event_callbacks(component):
+    """
+        Process the component and return a callback list
+    """
+    listeners = component.listeners + component.obj_listeners
+
+    callbacks = []
+    for event_cls, callback in listeners:
+        # event_cls can be string attribute name
+        if isinstance(event_cls, str):
+            event_cls = getattr(component, event_cls)
+
+        if isinstance(callback, str):
+            # string
+            callback = getattr(component, callback)
+
+        assert callable(callback)
+
+        callbacks.append((event_cls, callback))
+    return callbacks
+
+def _get_series_bindings(component):
+    bindings = component.series_bindings + component.obj_series_bindings
+
+    callbacks = []
+    for series, callback in bindings:
+        series = _get_series(component, series)
+        if not callable(callback):
+            callback = getattr(component, callback)
+        callbacks.append((series, callback))
+    return callbacks
+
 class BaseComponent(PublishingElement):
     """
     """
@@ -96,7 +128,7 @@ class SeriesComponent(BaseComponent):
 
     @add_component_hook
     def bind_series(self, component, controller=None):
-        bindings = self.process_bindings(component)
+        bindings = component.get_series_bindings()
 
         if controller is None:
             controller = self
@@ -107,17 +139,8 @@ class SeriesComponent(BaseComponent):
         for series, callback in bindings:
             controller.bind(series, callback, 'series')
 
-    @staticmethod
-    def process_bindings(component):
-        bindings = component.series_bindings + component.obj_series_bindings
-
-        callbacks = []
-        for series, callback in bindings:
-            series = _get_series(component, series)
-            if not callable(callback):
-                callback = getattr(component, callback)
-            callbacks.append((series, callback))
-        return callbacks
+    def get_series_bindings(self):
+        return _get_series_bindings(self)
 
     def add_series_binding(self, series, callback):
         self.obj_series_bindings.append((series, callback))
@@ -154,32 +177,13 @@ class ListeningComponent(SeriesComponent):
         if hasattr(controller, 'router'):
             controller = getattr(controller, 'router')
 
-        callbacks = self.process_callbacks(component)
+        callbacks = component.get_event_callbacks()
 
         for event_cls, callback in callbacks:
             controller.bind(event_cls, callback, 'event')
 
-    @staticmethod
-    def process_callbacks(component):
-        """
-            Process the component and return a callback list
-        """
-        callbacks = []
-        listeners = component.listeners + component.obj_listeners
-        for event_cls, callback in listeners:
-            # event_cls can be string attribute name
-            if isinstance(event_cls, str):
-                event_cls = getattr(component, event_cls)
-
-            if isinstance(callback, str):
-                # string
-                callback = getattr(component, callback)
-
-            assert callable(callback)
-
-            callbacks.append((event_cls, callback))
-
-        return callbacks
+    def get_event_callbacks(self):
+        return _get_event_callbacks(self)
 
 class Component(ListeningComponent):
     def __init__(self):
