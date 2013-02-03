@@ -27,9 +27,7 @@ class EventSeries(object):
         self.gen_id = generate_id(self)
         self.label_name = label_name
         self._hash = None
-        if event_cls:
-            self.event_cls = event_cls
-        self.generate_hash()
+        self.event_cls = event_cls
 
     def __repr__(self):
         return base_repr(self, self.repr_attrs)
@@ -44,14 +42,16 @@ class EventSeries(object):
         return not self.__eq__(other)
 
     def __hash__(self):
+        if self._hash is None:
+            self._hash = self.generate_hash()
         return self._hash
 
     def generate_hash(self):
         repr_attrs = self.repr_attrs 
         if self.label_name:
-            repr_attrs += 'label_name'
+            repr_attrs.append('label_name')
         attrs = tuple([getattr(self, name) for name in repr_attrs])
-        self._hash = hash(attrs)
+        return hash(attrs)
 
 class TimeSeries(EventSeries):
     """
@@ -60,7 +60,6 @@ class TimeSeries(EventSeries):
     uniform = True
 
 def create_series(event_cls):
-    series = EventSeries()
-    series.event_cls = event_cls
-    series.label_name = event_cls.__name__ + '_series'
+    label_name = event_cls.__name__ + '_series'
+    series = EventSeries(event_cls, label_name)
     return series

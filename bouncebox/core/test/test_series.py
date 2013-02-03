@@ -16,7 +16,7 @@ class TestEventSeries(unittest.TestCase):
 
     def test_generate_hash(self):
         """
-            Make sure we have different has
+            Make sure we have different hash
         """
         sig_a = TestEventA.class_series()
         sig_b = TestEventB.class_series()
