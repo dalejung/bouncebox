@@ -3,6 +3,7 @@ from mock import MagicMock
 
 import bouncebox.core.api as bc
 import bouncebox.middleware as middleware
+import bouncebox.util.testing as testing
 reload(middleware)
 
 class TestMiddleWare(TestCase):
@@ -36,23 +37,27 @@ class TestMiddleWare(TestCase):
         child.add_event_listener(bc.Event, 'handle_event')
         child.handle_event = MagicMock()
 
-        mid.add_child(child)
+        # We have an order issue
         parent.add_component(mid)
+        mid.add_child(child)
 
         evt = bc.Event()
         parent.broadcast(evt)
         # middle ware should have progated events to child
         child.handle_event.assert_called_once_with(evt)
 
-parent = bc.Component()
+parent = bc.Component('parent')
 mid = middleware.Middleware()
-child = bc.Component()
+child = bc.Component('child')
 
+# setup child with series and event bindings
 child.add_event_listener(bc.Event, 'handle_event')
 child.handle_event = MagicMock()
+child.add_series_binding(testing.TestEventA.class_series(), 'handle_series')
+child.handle_series = MagicMock()
 
-mid.add_child(child)
 parent.add_component(mid)
+mid.add_child(child)
 
 evt = bc.Event()
 parent.broadcast(evt)

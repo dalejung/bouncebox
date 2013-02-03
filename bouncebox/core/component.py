@@ -186,7 +186,9 @@ class ListeningComponent(SeriesComponent):
         return _get_event_callbacks(self)
 
 class Component(ListeningComponent):
-    def __init__(self):
+    repr_attrs = ['name']
+    def __init__(self, name=None):
+        self.name = name
         super(Component, self).__init__()
 
     def broadcast(self, event):

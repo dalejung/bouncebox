@@ -1,5 +1,10 @@
 import bouncebox.core.api as core
 
+def _get_callbacks(component):
+    event_callbacks = component.get_event_callbacks()
+    series_bindings = component.get_series_bindings()
+    return event_callbacks, series_bindings
+
 class Middleware(core.Component):
     """
         Component that does passthrough for it's children. 
@@ -8,8 +13,21 @@ class Middleware(core.Component):
     """
     def __init__(self):
         super(Middleware, self).__init__()
+        self.child_event_callbacks = {}
+        self.child_series_bindings = {}
 
     def add_child(self, component, overrides=None):
+        event_callbacks, series_bindings = _get_callbacks(component)
+
+        self.child_event_callbacks[component] = event_callbacks
+        self.child_series_bindings[component] = series_bindings
+
+        # bind them
+        for k, callback in event_callbacks:
+            self.front.bind(k, callback, 'event')
+        for k, callback in series_bindings:
+            self.front.bind(k, callback, 'series')
+
         super(Middleware, self).add_component(component)
 
     def add_component(self, component):
