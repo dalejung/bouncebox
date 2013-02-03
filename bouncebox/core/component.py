@@ -101,6 +101,9 @@ class SeriesComponent(BaseComponent):
         if controller is None:
             controller = self
 
+        if hasattr(controller, 'router'):
+            controller = getattr(controller, 'router')
+
         for series, callback in bindings:
             controller.bind(series, callback, 'series')
 
@@ -148,6 +151,9 @@ class ListeningComponent(SeriesComponent):
         if controller is None:
             controller = self
 
+        if hasattr(controller, 'router'):
+            controller = getattr(controller, 'router')
+
         callbacks = self.process_callbacks(component)
 
         for event_cls, callback in callbacks:
@@ -175,15 +181,26 @@ class ListeningComponent(SeriesComponent):
 
         return callbacks
 
-# This was here because I kept on changing what a component was
-# as I further upped the abstraction. So instead of renaming component
-# to Listening/Publishing I just did this here.
-Component = ListeningComponent
-def broadcast(self, event):
-    # hardcoded for speed
-    self.publish(event)
-    self.send(event)
+class Component(ListeningComponent):
+    def __init__(self):
+        super(Component, self).__init__()
 
+    def broadcast(self, event):
+        # hardcoded for speed
+        self.publish(event)
+        self.send(event)
+            
+    def init_internal_router(self):
+        """
+            
+        """
+        callbacks = self.process_callbacks(self)
+        for event_cls, callback in callbacks:
+            self._interal_router.bind(event_cls, callback, 'event')
+
+        bindings = self.process_bindings(self)
+        for series, callback in bindings:
+            self.router.bind(series, callback, 'series')
 
 class Source(Component):
     def __init__(self):
