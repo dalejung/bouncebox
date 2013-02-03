@@ -7,7 +7,10 @@ class Middleware(core.Component):
         When compo
     """
     def __init__(self):
-        pass
+        super(Middleware, self).__init__()
+
+    def add_child(self, component, overrides=None):
+        super(Middleware, self).add_component(component)
 
     def add_component(self, component):
         """
@@ -32,3 +35,7 @@ class Middleware(core.Component):
             Take an event from child and buble up to tradebox
         """
         raise NotImplementedError()
+
+if __name__ == '__main__':
+    import bouncebox.test.test_middleware
+    reload(bouncebox.test.test_middleware)
