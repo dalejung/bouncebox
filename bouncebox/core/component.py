@@ -192,6 +192,7 @@ class Component(ListeningComponent):
             
     def init_internal_router(self):
         """
+            Register the series and event callbacks to the internal router
         """
         router = self._internal_router
         self.bind_series(self, router)
@@ -200,6 +201,15 @@ class Component(ListeningComponent):
     def event_handler(self, event):
         """
             Universal Event Handler. Utilitizes the internal router
+
+            Parameters
+            ----------
+            event: Event
+                Event to process via the Component's callbacks
+
+            Notes
+            -----
+            The event_handler should call the same callbacks as BounceBox.broadcast
         """
         self._internal_router.send(event)
 
