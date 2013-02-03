@@ -12,8 +12,14 @@ class BaseRouter(object):
     This class servers as a router
     This will only work for a single threaded app atm because of 
     self.processing?
-    """
 
+    This Router uses Queueing
+
+    Without queuing events would go out of order because the newest broadcasted
+    event would take over propogation. 
+
+    With queueing, events propogate 
+    """
     def __init__(self):
         self.backends = []
         self.backend_funcs = []
@@ -55,14 +61,14 @@ def instance_check(message, key):
     if isinstance(message, key):
         return True
 
-class TERouter(BaseRouter):
+class BounceBoxRouter(BaseRouter):
     """
     TradeExpression specific router
     Changes made for speed
     """
     def __init__(self):
         """docstring for init"""
-        super(TERouter, self).__init__()
+        super(BounceBoxRouter, self).__init__()
 
         event_dispatcher = EventDispatcher()
         self.event_dispatcher = event_dispatcher
@@ -87,7 +93,7 @@ class TERouter(BaseRouter):
                 if not message:
                     message = self.queue.popleft()
 
-                # send_to_backends
+                # hard coded
                 self.event_dispatcher.send(message)
                 self.series_dispatcher.send(message)
 
@@ -100,9 +106,12 @@ class TERouter(BaseRouter):
             self.queue.append(message)
 
 
-Router = TERouter
+Router = BounceBoxRouter
 
-class Dispatcher(object):
+class Backend(object):
+    pass
+
+class Dispatcher(Backend):
     """
     Dispatch messages based on message type
     Mainly based off of ListeningElement with certain extra stuff removed
