@@ -1,3 +1,5 @@
+import itertools
+
 import bouncebox.core.api as core
 
 def _get_callbacks(component):
@@ -15,6 +17,13 @@ class Middleware(core.Component):
         super(Middleware, self).__init__()
         self.child_event_callbacks = {}
         self.child_series_bindings = {}
+        self.router.bind(core.Event, self.bubble_up, 'event')
+
+    def get_event_callbacks(self):
+        return list(itertools.chain(*self.child_event_callbacks.values()))
+
+    def get_series_bindings(self):
+        return list(itertools.chain(*self.child_series_bindings.values()))
 
     def add_child(self, component, overrides=None):
         event_callbacks, series_bindings = _get_callbacks(component)
@@ -22,13 +31,15 @@ class Middleware(core.Component):
         self.child_event_callbacks[component] = event_callbacks
         self.child_series_bindings[component] = series_bindings
 
-        # bind them
-        for k, callback in event_callbacks:
-            self.front.bind(k, callback, 'event')
-        for k, callback in series_bindings:
-            self.front.bind(k, callback, 'series')
+        # MiddleWare was already added to another component
+        # So we have to bind them here
+        if self.front != self: 
+            for k, callback in event_callbacks:
+                self.front.bind(k, callback, 'event')
+            for k, callback in series_bindings:
+                self.front.bind(k, callback, 'series')
 
-        super(Middleware, self).add_component(component)
+        super(Middleware, self).add_component(component, contained=True)
 
     def add_component(self, component):
         """
@@ -52,7 +63,8 @@ class Middleware(core.Component):
         """
             Take an event from child and buble up to tradebox
         """
-        raise NotImplementedError()
+        print event
+        self.broadcast(event)
 
 if __name__ == '__main__':
     import bouncebox.test.test_middleware
