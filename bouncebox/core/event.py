@@ -4,9 +4,10 @@ from functools import partial
 from bouncebox.util import Object
 from  bouncebox.core.series import create_series
 
+CLASS_SERIES_CACHE = {}
+
 class Event(Object):
     repr_attrs = ['timestamp']
-    _class_series = None
 
     # check __setattr__ immutable == True means immutable
     immutable = False
@@ -26,9 +27,9 @@ class Event(Object):
     @classmethod
     def class_series(self):
         # quick way to get default series
-        if self._class_series is None:
-            self._class_series = create_series(self)
-        return self._class_series
+        if not self in CLASS_SERIES_CACHE:
+            CLASS_SERIES_CACHE[self] = create_series(self)
+        return CLASS_SERIES_CACHE[self]
 
     def ___setattr__(self, name, value):
         # events are immutable
