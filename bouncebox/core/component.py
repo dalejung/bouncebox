@@ -192,15 +192,16 @@ class Component(ListeningComponent):
             
     def init_internal_router(self):
         """
-            
         """
-        callbacks = self.process_callbacks(self)
-        for event_cls, callback in callbacks:
-            self._interal_router.bind(event_cls, callback, 'event')
+        router = self._internal_router
+        self.bind_series(self, router)
+        self.bind_callbacks(self, router)
 
-        bindings = self.process_bindings(self)
-        for series, callback in bindings:
-            self.router.bind(series, callback, 'series')
+    def event_handler(self, event):
+        """
+            Universal Event Handler. Utilitizes the internal router
+        """
+        self._internal_router.send(event)
 
 class Source(Component):
     def __init__(self):

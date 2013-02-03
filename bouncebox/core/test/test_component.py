@@ -160,6 +160,61 @@ class TestBounceBoxComponent(TestCase):
             else:
                 assert c in [child.handle_b]
 
+    def test_internal_router(self):
+        """
+            Test that the internal router works
+        """
+        child = bc.Component()
+        # setup child
+        # event type handlers
+        child.add_event_listener(TestEventA, 'handle_a')
+        child.handle_a = MagicMock()
+        child.add_event_listener(TestEventB, 'handle_b')
+        child.handle_b = MagicMock()
+        child.add_event_listener(TestEventA, 'handle_a2')
+        child.handle_a2 = MagicMock()
+        # series handlers
+        child.series_bindings = [('sig_a', 'handle_a_series'), \
+                           ('sig_b', 'handle_b_series')]
+        child.sig_a = TestEventA.class_series()
+        child.sig_b = TestEventB.class_series()
+        child.handle_a_series = MagicMock()
+        child.handle_b_series = MagicMock()
+
+        child.init_internal_router()
+
+        evt_a = TestEventA()
+        child.event_handler(evt_a)
+
+        child.handle_a.assert_called_once_with(evt_a)
+        assert child.handle_b.call_count == 0
+        child.handle_a2.assert_called_once_with(evt_a)
+        child.handle_a_series.assert_called_once_with(evt_a)
+        assert child.handle_b_series.call_count == 0
+
+        evt_b = TestEventB()
+        child.event_handler(evt_b)
+        assert child.handle_a.call_count == 1 # not called again
+        assert child.handle_a2.call_count == 1 # not called again
+        child.handle_b.assert_called_once_with(evt_b)
+        child.handle_b_series.assert_called_once_with(evt_b)
+        child.handle_a_series.call_count == 1
+
+        parent = bc.Component()
+        parent.add_component(child)
+
+        # check the callbacks.
+        # internal router should be same as front.router
+        router = parent.router
+        internal_router = child._internal_router
+
+        # dict eq shold be enough
+        assert router.event_dispatcher.callback_registry == \
+                internal_router.event_dispatcher.callback_registry
+
+        assert router.series_dispatcher.callback_registry == \
+                internal_router.series_dispatcher.callback_registry
+
 if __name__ == '__main__':
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-s','-x','--pdb', '--pdb-failure'],exit=False)   
