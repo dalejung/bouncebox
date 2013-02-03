@@ -67,11 +67,43 @@ class TestBaseComponent(TestCase):
         assert len(child.logs) == 2 # a contained component only broadcasts to parent router
         assert in_jail.front is child
 
-class TestComponent(bc.Component):
-    listeners = [(TestEventA, 'handle_a')]
+class TestSeriesComponent(TestCase):
 
-    def handle_a(self, event):
-        print event
+    def __init__(self, *args, **kwargs):
+        TestCase.__init__(self, *args, **kwargs)
+
+    def runTest(self):
+        pass
+
+    def setUp(self):
+        pass
+
+    def test_series_bindings(self):
+        """
+            Test that series binding works
+        """
+        parent = bc.SeriesComponent()
+        child = bc.SeriesComponent()
+        # setup child with series binding via strings
+        child.series_bindings = [('sig_a', 'handle_a'), \
+                           ('sig_b', 'handle_b')]
+        child.sig_a = TestEventA.class_series()
+        child.sig_b = TestEventB.class_series()
+        child.handle_a = MagicMock()
+        child.handle_b = MagicMock()
+
+        bindings = child.process_bindings(child)
+        assert len(bindings) == 2
+
+        parent.add_component(child)
+        evt_a = TestEventA()
+        evt_b = TestEventB()
+        parent.broadcast(evt_a)
+        parent.broadcast(evt_b)
+        child.handle_a.assert_called_once_with(evt_a)
+        child.handle_b.assert_called_once_with(evt_b)
+        assert child.handle_a.call_count == 1
+        assert child.handle_b.call_count == 1
 
 class TestBounceBoxComponent(TestCase):
     def __init__(self, *args, **kwargs):

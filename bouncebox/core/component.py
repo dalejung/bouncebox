@@ -59,16 +59,27 @@ def add_component_hook(func):
     """
         Ideally this decorator will take a method and add it 
         to it's classes cls_add_component_list
+
+        Right now it's just used to visually distinguish the hook
     """
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         func(*args, **kwargs)
     return wrapper
 
+def _get_series(component, series):
+    """
+        Helper function that'll return the series object
+        from it's attr name
+    """
+    if isinstance(series, str):
+        series = getattr(component, series)
+    return series
+
 class SeriesComponent(BaseComponent):
     """
     The part of a Component dealing with receiving/providing
-    events and series. Specifically the series
+    events and series. Specifically the series.
     """
     series_bindings = []
     series_provided = []
@@ -79,38 +90,30 @@ class SeriesComponent(BaseComponent):
         self.obj_series_bindings = []
         self.add_component_hooks += self.bind_series
 
-    def add_series_binding(self, series, callback):
-        self.obj_series_bindings.append((series, callback))
-
-    # TODO make this become an add_component hook via decorator
     @add_component_hook
-    def bind_series(self, component):
-        bindings = component.series_bindings + component.obj_series_bindings
+    def bind_series(self, component, controller=None):
+        bindings = self.process_bindings(component)
+
+        if controller is None:
+            controller = self
+
         for series, callback in bindings:
-            # strings are attribute names
-            series = self._get_series(series, component)
+            controller.bind(series, callback, 'series')
+
+    @staticmethod
+    def process_bindings(component):
+        bindings = component.series_bindings + component.obj_series_bindings
+
+        callbacks = []
+        for series, callback in bindings:
+            series = _get_series(component, series)
             if not callable(callback):
                 callback = getattr(component, callback)
-            self.bind(series, callback, 'series')
-
+            callbacks.append((series, callback))
+        return callbacks
 
     def add_series_binding(self, series, callback):
-        """ 
-            I think at one point this was one imperatively
-            and not declaratively. 
-        """
-        self.series_bindings.append((series, callback))
-
-    def _get_series(self, series, component=None):
-        """
-            Helper function that'll return the series object
-            from it's attr name
-        """
-        if component is None:
-            component = self
-        if isinstance(series, str):
-            series = getattr(component, series)
-        return series
+        self.obj_series_bindings.append((series, callback))
 
     def get_series_provided(self):
         provided = []
@@ -118,7 +121,6 @@ class SeriesComponent(BaseComponent):
             series = self._get_series(series)
             provided.append(series)
         return provided 
-
 
 class ListeningComponent(SeriesComponent):
     """
@@ -145,7 +147,6 @@ class ListeningComponent(SeriesComponent):
         callbacks = self.process_callbacks(component)
 
         for event_cls, callback in callbacks:
-            # QUEUE
             controller.bind(event_cls, callback, 'event')
 
     @staticmethod
@@ -169,18 +170,6 @@ class ListeningComponent(SeriesComponent):
             callbacks.append((event_cls, callback))
 
         return callbacks
-
-    def extend_callbacks(self, component):
-        """
-        Will extend current listeners with one of a component.
-        Useful when adding a sub-component since a parent
-        component has no awareness of front(bouncebox) until
-        it itself is added. which happens after init
-        """
-        callbacks = self.process_callbacks(component)
-        for event_cls, callback in callbacks:
-            self.add_event_listener(event_cls, callback)
-
 
 # This was here because I kept on changing what a component was
 # as I further upped the abstraction. So instead of renaming component
