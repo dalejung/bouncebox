@@ -4,21 +4,9 @@ from bouncebox.core.event import Event
 from collections import OrderedDict
 
 class Element(Object):
-    def __init__(self):
-        self.broadcast_hooks = EventHook()
+    pass
 
-    def broadcast(self, event):
-        self.broadcast_hooks.fire(event)
-
-class ListeningElement(Element):
-    """
-    """
-    listeners = []
-    def __init__(self):
-        super(ListeningElement, self).__init__()
-        self.obj_listeners = []
-
-class PublishingElement(ListeningElement):
+class PublishingElement(Element):
     """
         Really this should use the Router of each component
     """

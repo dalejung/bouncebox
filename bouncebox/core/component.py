@@ -11,25 +11,29 @@ class BaseComponent(PublishingElement):
     """
     """
     cls_add_component_hooks = EventHook()
+    listeners = []
 
     def __init__(self):
         super(BaseComponent, self).__init__()
 
+        self.obj_listeners = []
+
         self.gen_id = generate_id(self)
 
         self.router = Router()
+        self._internal_router = Router()
 
         self.add_component_hooks = EventHook()
         self.components = []
 
+        self.broadcast_hooks = EventHook()
         self.broadcast_hooks += self.publish
         self.broadcast_hooks += self.send
 
         self.front = self
 
     def broadcast(self, event):
-        self.publish(event)
-        self.send(event)
+        self.broadcast_hooks.fire(event)
 
     def add_component(self, component, contained=False):
         component.front = self.front
@@ -175,6 +179,11 @@ class ListeningComponent(SeriesComponent):
 # as I further upped the abstraction. So instead of renaming component
 # to Listening/Publishing I just did this here.
 Component = ListeningComponent
+def broadcast(self, event):
+    # hardcoded for speed
+    self.publish(event)
+    self.send(event)
+
 
 class Source(Component):
     def __init__(self):
