@@ -8,6 +8,7 @@ def _get_callbacks(component):
     return event_callbacks, series_bindings
 
 class Middleware(core.Component):
+    listeners = [(core.Event, 'bubble_down')]
     """
         Component that does passthrough for it's children. 
 
@@ -28,33 +29,36 @@ class Middleware(core.Component):
         self.child_series_bindings = {}
         self.children = []
 
-    def get_event_callbacks(self):
-        return list(itertools.chain(*self.child_event_callbacks.values()))
+        self.down_router = core.Router()
 
-    def get_series_bindings(self):
-        return list(itertools.chain(*self.child_series_bindings.values()))
+        self.down_filter = None
+        self.up_filter = None
+        # TODO support multi filters
+        #self.up_filters = []
+        #self.down_filters = []
 
-    def add_child(self, component, overrides=None):
+    def add_child(self, component):
         """
-            
+           Parameters
+           ----------
+           component : Component
         """
         # we bubble up or rebroadcast child broadcasts
         component.broadcast = self.bubble_up
+        self._init_bubble_down(component)
+        self.children.append(component)
 
+    def _init_bubble_down(self, component):
         event_callbacks, series_bindings = _get_callbacks(component)
         # keep track of child callbacks
         self.child_event_callbacks[component] = event_callbacks
         self.child_series_bindings[component] = series_bindings
 
-        # MiddleWare was already added to another component
-        # So we have to bind them here
-        if self.front != self: 
-            for k, callback in event_callbacks:
-                self.front.bind(k, callback, 'event')
-            for k, callback in series_bindings:
-                self.front.bind(k, callback, 'series')
-
-        self.children.append(component)
+        # bind to the down_router
+        for k, callback in event_callbacks:
+            self.down_router.bind(k, callback, 'event')
+        for k, callback in series_bindings:
+            self.down_router.bind(k, callback, 'series')
 
     def add_component(self, component):
         """
@@ -67,13 +71,30 @@ class Middleware(core.Component):
             Takes an event and passes it to the children as if Middleware did 
             not exist.
         """
-        raise NotImplementedError()
+        if self.down_filter:
+            event = self.down_filter(event)
+        self.down_router.send(event)
+
+    def add_filter(self, filter, type='down', key=None):
+        # Eventually I'd want to have a router like system here.
+        # but for simplicity, I will have only up/down filter
+        if type == 'down':
+            if self.down_filter is not None:
+                raise Exception("Middleware currently only supports one up and one down filter")
+            self.down_filter = filter
+            #self.down_filters.append((key, filter))
+        else:
+            if self.up_filter is not None:
+                raise Exception("Middleware currently only supports one up and one down filter")
+            self.up_filter = filter
+            #self.up_filters.append((key, filter))
 
     def bubble_up(self, event):
         """
             Take an event from child and buble up to tradebox
         """
-        print event
+        if self.up_filter:
+            event = self.up_filter(event)
         self.broadcast(event)
 
 if __name__ == '__main__':
