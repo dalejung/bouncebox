@@ -60,7 +60,7 @@ class Middleware(core.Component):
         for k, callback in series_bindings:
             self.down_router.bind(k, callback, 'series')
 
-    def add_component(self, component):
+    def add_component(self, component, *args, **kwargs):
         """
             see: add_child
         """
