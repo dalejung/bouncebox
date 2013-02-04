@@ -66,15 +66,6 @@ class Middleware(core.Component):
         """
         raise NotImplementedError()
 
-    def bubble_down(self, event):
-        """
-            Takes an event and passes it to the children as if Middleware did 
-            not exist.
-        """
-        if self.down_filter:
-            event = self.down_filter(event)
-        self.down_router.send(event)
-
     def add_filter(self, filter, type='down', key=None):
         # Eventually I'd want to have a router like system here.
         # but for simplicity, I will have only up/down filter
@@ -88,6 +79,15 @@ class Middleware(core.Component):
                 raise Exception("Middleware currently only supports one up and one down filter")
             self.up_filter = filter
             #self.up_filters.append((key, filter))
+
+    def bubble_down(self, event):
+        """
+            Takes an event and passes it to the children as if Middleware did 
+            not exist.
+        """
+        if self.down_filter:
+            event = self.down_filter(event)
+        self.down_router.send(event)
 
     def bubble_up(self, event):
         """
