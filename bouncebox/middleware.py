@@ -8,7 +8,7 @@ def _get_callbacks(component):
     return event_callbacks, series_bindings
 
 class Middleware(core.Component):
-    listeners = [(core.Event, 'bubble_down')]
+    listeners = [(core.Event, 'handle_bubble_down')]
     """
         Component that does passthrough for it's children. 
 
@@ -44,7 +44,7 @@ class Middleware(core.Component):
            component : Component
         """
         # we bubble up or rebroadcast child broadcasts
-        component.broadcast = self.bubble_up
+        component.broadcast = self.handle_bubble_up
         self._init_bubble_down(component)
         self.children.append(component)
 
@@ -80,18 +80,24 @@ class Middleware(core.Component):
             self.up_filter = filter
             #self.up_filters.append((key, filter))
 
+    def handle_bubble_down(self, event):
+        """
+            Event Handler for front.router events
+        """
+        if self.down_filter:
+            event = self.down_filter(event)
+        self.bubble_down(event)
+
     def bubble_down(self, event):
         """
             Takes an event and passes it to the children as if Middleware did 
             not exist.
         """
-        if self.down_filter:
-            event = self.down_filter(event)
         self.down_router.send(event)
 
-    def bubble_up(self, event):
+    def handle_bubble_up(self, event):
         """
-            Take an event from child and buble up to tradebox
+            Handle broadcasted events from children and rebroadcast
         """
         if self.up_filter:
             event = self.up_filter(event)

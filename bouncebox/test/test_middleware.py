@@ -81,7 +81,7 @@ class TestMiddleWare(TestCase):
 
         parent.add_component(mid)
         callback = parent.router.event_dispatcher.callback_registry[bc.Event][0] 
-        assert callback == mid.bubble_down
+        assert callback == mid.handle_bubble_down
 
     def test_bubble_up(self):
         parent = bc.Component('parent')
