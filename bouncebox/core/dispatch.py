@@ -160,11 +160,10 @@ class EventDispatcher(Dispatcher):
         """
         registry = self.cache_callback_registry
         event_type = type(message)
-        try:
-            callbacks = registry[event_type]
-        except:
+
+        if event_type not in registry:
             registry[event_type] = self.get_callbacks(message)
-            callbacks = registry[event_type]
+        callbacks = registry[event_type]
 
         for callback in callbacks:
             callback(message)
