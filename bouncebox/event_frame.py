@@ -2,11 +2,23 @@
     Set of tools to translate between a list of events and DataFrames
 """
 from collections import OrderedDict
+from operator import attrgetter
 import pandas as pd
+import functools
+
+def _getter(evt, attr):
+    """ essentially attrgetter that returns None when attr does not exist """
+    _get = attrgetter(attr)
+    try:
+        return _get(evt)
+    except:
+        return None
 
 def _column_picker(attr, events):
     """ Grab an attr for every Event in list """
-    getter = lambda evt: getattr(evt, attr, None)
+    getter = attr
+    if not callable(getter):
+        getter = functools.partial(_getter, attr=attr)
     data = map(getter, events)
     return data
 
@@ -21,8 +33,14 @@ def eventlist_to_frame(lst, attrs=None, repr_col=False):
 
     sdict = OrderedDict()
     for attr in attrs:
+        col = attr
+        if isinstance(attr, tuple):
+            col, attr = attr
+        # special case
+        if attr == 'class_name':
+            attr = '__class__.__name__'
         data = _column_picker(attr, lst)
-        sdict[attr] = data
+        sdict[col] = data
 
     # TODO: Make it so we remove the attrs that we've already outputed.
     # if we assume non-homogenity, we have to remove diferent attrs per

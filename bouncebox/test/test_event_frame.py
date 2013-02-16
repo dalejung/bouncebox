@@ -116,6 +116,21 @@ class TestEventFrame(TestCase):
         test = el2.to_frame(attrs=['id'], repr_col=True)
         tm.assert_frame_equal(test, correct)
 
+    def test_tuple_attr(self):
+        """
+            Added the ability to add a tuple attr which is (col, attr) and 
+            attr can be a func
+        """
+        ind = pd.date_range(start="2000/1/1", periods=10)
+
+        events = [TestEvent(ind[i], i, len(ind)-i) for i in range(len(ind))]
+        el = ef.EventList(events, attrs=['timestamp', 'id', 
+                                         # note the lambda for bob
+                                          ('bob', lambda x: id(x))])
+        df = el.to_frame()
+        for i, evt in enumerate(events):
+            assert id(evt) == df.bob[i]
+
 if __name__ == '__main__':
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-s','-x','--pdb', '--pdb-failure'],exit=False)   
