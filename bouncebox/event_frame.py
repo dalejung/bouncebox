@@ -1,7 +1,13 @@
 """
     Set of tools to translate between a list of events and DataFrames
 """
+from collections import OrderedDict
 import pandas as pd
+
+def _column_picker(attr, events):
+    getter = lambda evt: getattr(evt, attr, None)
+    data = map(getter, events)
+    return data
 
 def eventlist_to_frame(lst, attrs=None, repr_col=False):
     if len(lst) == 0:
@@ -11,16 +17,16 @@ def eventlist_to_frame(lst, attrs=None, repr_col=False):
     if attrs is None:
         attrs = test.repr_attrs
 
-    data = []
-    for evt in lst:
-        l = [getattr(evt, attr) for attr in attrs]
-        if repr_col:
-            l.append(repr(evt))
-        data.append(l)
+    sdict = OrderedDict()
+    for attr in attrs:
+        data = _column_picker(attr, lst)
+        sdict[attr] = data
 
     if repr_col:
-        attrs.append('repr')
-    return pd.DataFrame(data, columns=attrs)
+        data = map(repr, lst)
+        sdict['repr'] = data
+
+    return pd.DataFrame(sdict)
 
 class EventList(list):
     _cache_df = None

@@ -73,7 +73,7 @@ class TestEventFrame(TestCase):
 
     def test_repr_col(self):
         """
-            Test passing in attrs to init
+        Test that repr col works correctly
         """
         ind = pd.date_range(start="2000/1/1", periods=10)
 
