@@ -22,7 +22,7 @@ class Logger(component.Component):
         self.series = series
         self.event_types = event_types
         self.data = {}
-        self.all_events = [] # can't be EventList since events not homogenous
+        self.all_events = EventList(attrs=['timestamp'], repr_col=True)
 
         self._add_bindings()
 
