@@ -22,6 +22,24 @@ def _column_picker(attr, events):
     data = map(getter, events)
     return data
 
+def _process_attrs(attrs):
+    """
+        Normalize attrs into the form of [(col, attr), (col, attr)]
+    """
+    new_attrs = OrderedDict()
+    for attr in attrs:
+        col = attr
+        if isinstance(attr, tuple):
+            col, attr = attr
+        # special cases
+        if attr == 'class_name':
+            attr = '__class__.__name__'
+        if attr == 'repr':
+            attr = repr
+        new_attrs[col] = attr
+
+    return new_attrs
+
 def eventlist_to_frame(lst, attrs=None, repr_col=False):
     if len(lst) == 0:
         return pd.DataFrame()
@@ -31,23 +49,18 @@ def eventlist_to_frame(lst, attrs=None, repr_col=False):
     if attrs is None:
         attrs = test.repr_attrs
 
-    sdict = OrderedDict()
-    for attr in attrs:
-        col = attr
-        if isinstance(attr, tuple):
-            col, attr = attr
-        # special case
-        if attr == 'class_name':
-            attr = '__class__.__name__'
-        data = _column_picker(attr, lst)
-        sdict[col] = data
-
     # TODO: Make it so we remove the attrs that we've already outputed.
     # if we assume non-homogenity, we have to remove diferent attrs per
     # event type
     if repr_col:
-        data = map(repr, lst)
-        sdict['repr'] = data
+        attrs.append('repr')
+    attrs = _process_attrs(attrs)
+
+    sdict = OrderedDict()
+    for col, attr in attrs.items():
+        data = _column_picker(attr, lst)
+        sdict[col] = data
+
 
     return pd.DataFrame(sdict)
 
