@@ -24,6 +24,23 @@ class TestEventFrame(TestCase):
     def setUp(self):
         pass
 
+    def test_empty_eventlist(self):
+        """
+        Start from empty eventlist and append
+        """
+        ind = pd.date_range(start="2000/1/1", periods=10)
+
+        events = [TestEvent(ind[i], i, len(ind)-i) for i in range(len(ind))]
+        el = ef.EventList()
+        for evt in events:
+            el.append(evt)
+
+        df = el.to_frame()
+        for i, evt in enumerate(el):
+            assert evt.data == df.ix[i]['data']
+            assert evt.timestamp == df.ix[i]['timestamp']
+            assert evt.id == df.ix[i]['id']
+
     def test_to_frame(self):
         """
             Test creating DataFrame and modifying

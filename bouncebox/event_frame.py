@@ -36,7 +36,9 @@ def eventlist_to_frame(lst, attrs=None, repr_col=False):
 class EventList(list):
     _cache_df = None
 
-    def __init__(self, data, attrs=None, repr_col=False):
+    def __init__(self, data=None, attrs=None, repr_col=False):
+        if data is None:
+            data = [] # meh
         self.attrs = attrs
         self.repr_col = repr_col
         super(EventList, self).__init__(data)
