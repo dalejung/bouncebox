@@ -24,6 +24,9 @@ def eventlist_to_frame(lst, attrs=None, repr_col=False):
         data = _column_picker(attr, lst)
         sdict[attr] = data
 
+    # TODO: Make it so we remove the attrs that we've already outputed.
+    # if we assume non-homogenity, we have to remove diferent attrs per
+    # event type
     if repr_col:
         data = map(repr, lst)
         sdict['repr'] = data
@@ -44,6 +47,8 @@ class EventList(list):
         if repr_col is None:
             repr_col = self.repr_col
 
+        # turned off caching for now. Need to cache key by attrs and repr_col
+        #if self._cache_df is None:
         self._cache_df = eventlist_to_frame(self, attrs, repr_col)
         return self._cache_df
 
