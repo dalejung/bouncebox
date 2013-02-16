@@ -57,7 +57,8 @@ class DateMatcher(object):
 
 class DateResponder(bb.Component):
     """
-        params
+        Parameters
+        ----------
         trans: DataFrame of data needed for each date match
         dates: array of dates to key datematch, defaults to trans.index
         values: Do we use the values array? Must faster to stay in numpy land
@@ -125,34 +126,3 @@ class DateMatchEvent(bb.Event):
     def __init__(self, timestamp, matches):
         super(DateMatchEvent, self).__init__(timestamp)
         self.matches = matches
-
-if __name__ == '__main__':
-    from bouncebox.util.logger import Logger
-
-    ind = pd.date_range(start="2000-01-01", freq="D", periods=20)
-
-    dates = ind[[1,3,7]]
-    dates = dates.repeat(3)
-
-    trans = pd.DataFrame({'blah':range(len(dates)), 'high':np.random.randn(len(dates))}, index=dates)
-
-    events = EventBroadcaster([bb.SourceEvent(date) for date in ind])
-    box = bb.BounceBox()
-    box.add_source(events)
-
-    logger = Logger()
-    box.add_component(logger)
-
-    # need an easier way to grab this
-    s = bb.create_series(DateMatchEvent)
-
-    def dummy_print(self, matches, event):
-        print matches
-
-    tr = DateResponder(trans, values=True, event_cls=bb.SourceEvent, callback=dummy_print)
-    box.add_component(tr)
-
-    box.start_box()
-    #match_events = logger.data[str(s)]
-    #assert len(match_events) == len(dates.unique()) # one match per unique date
-
