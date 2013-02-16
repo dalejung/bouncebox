@@ -83,6 +83,22 @@ class TestEventFrame(TestCase):
         for i, evt in enumerate(events):
             assert repr(evt) == df.repr[i]
 
+    def test_to_frame_override(self):
+        """
+            Test to_frame(attrs, repr_col)
+        """
+        ind = pd.date_range(start="2000/1/1", periods=10)
+
+        events = [TestEvent(ind[i], i, len(ind)-i) for i in range(len(ind))]
+        el = ef.EventList(events, attrs=['id'], repr_col=True)
+        correct = el.to_frame()
+
+        el2 = ef.EventList(events)
+        bad = el2.to_frame() # regular ole to_frame
+        assert set(bad.columns) == set(TestEvent.repr_attrs)
+        test = el2.to_frame(attrs=['id'], repr_col=True)
+        tm.assert_frame_equal(test, correct)
+
 if __name__ == '__main__':
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-s','-x','--pdb', '--pdb-failure'],exit=False)   

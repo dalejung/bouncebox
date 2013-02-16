@@ -5,14 +5,16 @@ from collections import OrderedDict
 import pandas as pd
 
 def _column_picker(attr, events):
+    """ Grab an attr for every Event in list """
     getter = lambda evt: getattr(evt, attr, None)
     data = map(getter, events)
     return data
 
 def eventlist_to_frame(lst, attrs=None, repr_col=False):
     if len(lst) == 0:
-        return None
+        return pd.DataFrame()
 
+    # grab first event to get attrs, assumes homogenity
     test = lst[0]
     if attrs is None:
         attrs = test.repr_attrs
@@ -36,9 +38,13 @@ class EventList(list):
         self.repr_col = repr_col
         super(EventList, self).__init__(data)
 
-    def to_frame(self):
-        if self._cache_df is None:
-            self._cache_df = eventlist_to_frame(self, self.attrs, self.repr_col)
+    def to_frame(self, attrs=None, repr_col=None):
+        if attrs is None:
+            attrs = self.attrs
+        if repr_col is None:
+            repr_col = self.repr_col
+
+        self._cache_df = eventlist_to_frame(self, attrs, repr_col)
         return self._cache_df
 
     mutation_methods = [
