@@ -1,27 +1,38 @@
 """
-    Set of tools to translate between a list of homogenous events and DataFrames
+    Set of tools to translate between a list of events and DataFrames
 """
 import pandas as pd
 
-def eventlist_to_frame(lst):
+def eventlist_to_frame(lst, attrs=None, repr_col=False):
     if len(lst) == 0:
         return None
 
     test = lst[0]
-    attrs = test.repr_attrs
+    if attrs is None:
+        attrs = test.repr_attrs
+
     data = []
     for evt in lst:
         l = [getattr(evt, attr) for attr in attrs]
+        if repr_col:
+            l.append(repr(evt))
         data.append(l)
 
+    if repr_col:
+        attrs.append('repr')
     return pd.DataFrame(data, columns=attrs)
 
 class EventList(list):
     _cache_df = None
 
+    def __init__(self, data, attrs=None, repr_col=False):
+        self.attrs = attrs
+        self.repr_col = repr_col
+        super(EventList, self).__init__(data)
+
     def to_frame(self):
         if self._cache_df is None:
-            self._cache_df = eventlist_to_frame(self)
+            self._cache_df = eventlist_to_frame(self, self.attrs, self.repr_col)
         return self._cache_df
 
     mutation_methods = [

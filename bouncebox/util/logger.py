@@ -2,6 +2,7 @@ from collections import deque
 
 import bouncebox.core.component as component
 import bouncebox.core.event as event
+from bouncebox.event_frame import EventList
 
 class Logger(component.Component):
     """
@@ -21,7 +22,7 @@ class Logger(component.Component):
         self.series = series
         self.event_types = event_types
         self.data = {}
-        self.all_events = []
+        self.all_events = [] # can't be EventList since events not homogenous
 
         self._add_bindings()
 
@@ -45,7 +46,7 @@ class Logger(component.Component):
 
     def log(self, event):
         key = self.get_key(event)
-        lst = self.data.setdefault(key, [])
+        lst = self.data.setdefault(key, EventList())
         lst.append(event)
         self.all_events.append(event)
 
