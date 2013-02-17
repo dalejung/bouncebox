@@ -219,6 +219,19 @@ class TestBounceBoxComponent(TestCase):
         assert router.series_dispatcher.callback_registry == \
                 internal_router.series_dispatcher.callback_registry
 
+    def test_send_log(self):
+        """
+            Test logging broadcasted events
+        """
+        comp = bc.Component(log_broadcast=True)
+        b = be.Event(None)
+        comp.broadcast(b)
+        c = be.Event(None)
+        comp.broadcast(c)
+        assert len(comp.send_log) == 2
+        assert b == comp.send_log[0]
+        assert c == comp.send_log[1]
+
 if __name__ == '__main__':
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-s','-x','--pdb', '--pdb-failure'],exit=False)   

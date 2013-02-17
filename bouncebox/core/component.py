@@ -187,11 +187,15 @@ class ListeningComponent(SeriesComponent):
 
 class Component(ListeningComponent):
     repr_attrs = ['name']
-    def __init__(self, name=None):
+    def __init__(self, name=None, log_broadcast=False):
         self.name = name
+        self.log_broadcast = log_broadcast
+        self.send_log = []
         super(Component, self).__init__()
 
     def broadcast(self, event):
+        if self.log_broadcast:
+            self.send_log.append(event)
         # hardcoded for speed
         self.publish(event)
         self.send(event)
