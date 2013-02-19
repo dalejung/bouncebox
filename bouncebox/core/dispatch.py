@@ -20,17 +20,31 @@ class BaseRouter(object):
 
     With queueing, events propogate 
     """
-    def __init__(self):
+    def __init__(self, logging=False):
         self.backends = []
         self.backend_funcs = []
         self.queue = deque()
         self.processing = 0
+        self.logs = []
+        self.logging = logging
+        if logging:
+            self.send = self.send_log
+        else:
+            self.send = self._send
 
-    def send(self, message):
+    def start_logging(self):
+        self.logging = True
+        self.send = self.send_log
+
+    def _send(self, message):
         if not self.processing:
             self._process(message)        
         else:
             self.queue.append(message)
+
+    def send_log(self, message):
+        self.logs.append(message)
+        self._send(message)
 
     def send_to_backends(self, message):
         for func in self.backend_funcs:
@@ -66,9 +80,9 @@ class BounceBoxRouter(BaseRouter):
     TradeExpression specific router
     Changes made for speed
     """
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """docstring for init"""
-        super(BounceBoxRouter, self).__init__()
+        super(BounceBoxRouter, self).__init__(*args, **kwargs)
 
         event_dispatcher = EventDispatcher()
         self.event_dispatcher = event_dispatcher
@@ -86,7 +100,7 @@ class BounceBoxRouter(BaseRouter):
         except AttributeError as err:
             raise DispatcherNotFound(str(err))
 
-    def send(self, message):
+    def _send(self, message):
         if not self.processing:
             self.processing = True
             while True:

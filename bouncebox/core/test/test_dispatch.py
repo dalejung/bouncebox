@@ -72,6 +72,52 @@ class TestBaseRouter(unittest.TestCase):
         assert logger.handle_event.call_count == 2
         assert isinstance(logger.logs[1], TestEvent)
 
+    def test_router_logging(self):
+        """
+            Test that logging works for router
+        """
+        r = Router(logging=True)
+        # test binding
+
+        sevt = SourceEvent()
+        r.send(sevt)
+        assert r.logs[0] is sevt
+
+        sevt2 = SourceEvent()
+        r.send(sevt2)
+        assert r.logs[1] is sevt2
+
+    def test_router_logging_off(self):
+        """
+            Test that turning off logging works like normal.
+        """
+        r = Router(logging=False)
+        # test binding
+
+        sevt = SourceEvent()
+        r.send(sevt)
+        assert len(r.logs) == 0
+
+        # we bind send to the old def send()
+        assert r.send == r._send
+
+    def test_router_start_logging(self):
+        """
+            Test that we can turn the logging on
+        """
+        r = Router(logging=False)
+        assert r.send == r._send
+
+        sevt = SourceEvent()
+        r.send(sevt)
+        assert len(r.logs) == 0
+
+        r.start_logging()
+
+        sevt2 = SourceEvent()
+        r.send(sevt2)
+        assert r.logs[0] is sevt2
+
 if __name__ == '__main__':
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-vvs','-x','--pdb', '--pdb-failure'],exit=False)   
