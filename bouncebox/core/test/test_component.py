@@ -185,7 +185,8 @@ class TestBounceBoxComponent(TestCase):
         child.handle_a_series = MagicMock()
         child.handle_b_series = MagicMock()
 
-        child.init_internal_router()
+        # removed init. should lazy load and work normally
+        #child.init_internal_router()
 
         evt_a = TestEventA()
         child.event_handler(evt_a)

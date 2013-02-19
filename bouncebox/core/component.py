@@ -70,6 +70,7 @@ class BaseComponent(PublishingElement):
     def add_component(self, component, contained=False):
         if len(component.components) > 0:
             raise Exception("Added a component that already has sub-components")
+
         component.front = self.front
         if contained:
             component.front = self
@@ -193,6 +194,7 @@ class Component(ListeningComponent):
         self.name = name
         self.log_broadcast = log_broadcast
         self.send_log = []
+        self._internal_router_built = False
         super(Component, self).__init__()
 
     def broadcast(self, event):
@@ -209,6 +211,7 @@ class Component(ListeningComponent):
         router = self._internal_router
         self.bind_series(self, router)
         self.bind_callbacks(self, router)
+        self._internal_router_built = True
 
     def event_handler(self, event):
         """
@@ -223,6 +226,10 @@ class Component(ListeningComponent):
             -----
             The event_handler should call the same callbacks as BounceBox.broadcast
         """
+        # lazy init internal router. Logic is that by the time event_handler is
+        # called the listeners should all be added
+        if not self._internal_router_built:
+            self.init_internal_router()
         self._internal_router.send(event)
 
 class Source(Component):
