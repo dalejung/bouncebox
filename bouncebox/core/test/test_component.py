@@ -232,6 +232,33 @@ class TestBounceBoxComponent(TestCase):
         assert b == comp.send_log[0]
         assert c == comp.send_log[1]
 
+    def test_add_component_order(self):
+        """
+        Adding a component that already has sub components is an error.
+        The ordering matters because the .front of the sub components is already set. 
+        If you add the parent, and then the children, the children will grab the parent's front. 
+        So we error if adding a component that is already a parent
+        """
+        grandparent = bc.Component()
+        parent = bc.Component()
+        child = bc.Component()
+
+        try:
+            parent.add_component(child) 
+            grandparent.add_component(parent)
+        except: 
+            pass
+        else: 
+            assert False, "This should have errrored"
+
+        grandparent = bc.Component()
+        parent = bc.Component()
+        child = bc.Component()
+
+        # correct order
+        grandparent.add_component(parent)
+        parent.add_component(child) 
+
 if __name__ == '__main__':
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-s','-x','--pdb', '--pdb-failure'],exit=False)   
