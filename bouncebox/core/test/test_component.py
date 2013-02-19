@@ -189,7 +189,7 @@ class TestBounceBoxComponent(TestCase):
         #child.init_internal_router()
 
         evt_a = TestEventA()
-        child.event_handler(evt_a)
+        child.global_event_handler(evt_a)
 
         child.handle_a.assert_called_once_with(evt_a)
         assert child.handle_b.call_count == 0
@@ -198,7 +198,7 @@ class TestBounceBoxComponent(TestCase):
         assert child.handle_b_series.call_count == 0
 
         evt_b = TestEventB()
-        child.event_handler(evt_b)
+        child.global_event_handler(evt_b)
         assert child.handle_a.call_count == 1 # not called again
         assert child.handle_a2.call_count == 1 # not called again
         child.handle_b.assert_called_once_with(evt_b)

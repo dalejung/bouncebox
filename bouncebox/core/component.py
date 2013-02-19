@@ -213,7 +213,7 @@ class Component(ListeningComponent):
         self.bind_callbacks(self, router)
         self._internal_router_built = True
 
-    def event_handler(self, event):
+    def global_event_handler(self, event):
         """
             Universal Event Handler. Utilitizes the internal router
 
