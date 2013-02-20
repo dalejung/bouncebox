@@ -1,5 +1,6 @@
 import itertools
 
+from bouncebox.util import EventHook
 import bouncebox.core.api as core
 
 def _get_callbacks(component):
@@ -7,7 +8,7 @@ def _get_callbacks(component):
     series_bindings = component.get_series_bindings()
     return event_callbacks, series_bindings
 
-class Middleware(core.Component):
+class MiddlewareMixin(object):
     listeners = [(core.Event, 'handle_bubble_down')]
     """
         Component that does passthrough for it's children. 
@@ -24,7 +25,6 @@ class Middleware(core.Component):
         A usecase may be to alter or prohibit events going to children
     """
     def __init__(self):
-        super(Middleware, self).__init__()
         self.child_event_callbacks = {}
         self.child_series_bindings = {}
         self.children = []
@@ -103,6 +103,11 @@ class Middleware(core.Component):
             event = self.up_filter(event)
         self.broadcast(event)
 
-if __name__ == '__main__':
-    import bouncebox.test.test_middleware
-    reload(bouncebox.test.test_middleware)
+class Middleware(core.Component):
+    # make sure our mixin only affects this specific class
+    _init_hooks = EventHook()
+    listeners = []
+    def __init__(self, *args, **kwargs):
+        super(Middleware, self).__init__(*args, **kwargs)
+
+core.component_mixin(Middleware, MiddlewareMixin, override=['add_component'])
