@@ -44,6 +44,7 @@ class BaseComponent(PublishingElement):
     """
     cls_add_component_hooks = EventHook()
     listeners = []
+    _init_hooks = EventHook()
 
     def __init__(self):
         super(BaseComponent, self).__init__()
@@ -63,6 +64,7 @@ class BaseComponent(PublishingElement):
         self.broadcast_hooks += self.send
 
         self.front = self
+        self._init_hooks.fire(self)
 
     def broadcast(self, event):
         self.broadcast_hooks.fire(event)

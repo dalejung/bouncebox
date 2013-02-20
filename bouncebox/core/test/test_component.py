@@ -40,6 +40,22 @@ class TestBaseComponent(TestCase):
         comp.add_component(child)
         assert child in comp.components
 
+    def test_init_hooks(self):
+        """
+        Test that init_hooks run correctly.
+        """
+        def init(self):
+            self.ran_init = True
+            assert isinstance(self, bc.BaseComponent)
+            # base component should has these
+            assert hasattr(self, 'router')
+            assert hasattr(self, 'components')
+        bc.BaseComponent._init_hooks += init
+        comp = bc.BaseComponent()
+        assert comp.ran_init
+
+        reload(bc) # get rid of changes
+
     def test_bind(self):
         comp = bc.BaseComponent()
         child = LoggingChild()
