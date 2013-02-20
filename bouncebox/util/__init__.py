@@ -30,7 +30,8 @@ class EventHook(object):
     def fire(self, *args, **kwargs):
         skip = kwargs.pop('skip',None)
         for handler in self.__handlers:
-            if hasattr(handler, 'im_self') and handler.im_self == skip:
+            im_self = getattr(handler, 'im_self', None)
+            if im_self and im_self == skip:
                 continue
             try:
                 handler(*args, **kwargs)
@@ -41,6 +42,12 @@ class EventHook(object):
         for theHandler in self.__handlers:
             if theHandler.im_self == inObject:
                 self -= theHandler
+
+    def __contains__(self, other):
+        return other in self.__handlers
+
+    def __repr__(self):
+        return repr(self.__handlers)
 
 import uuid
 from itertools import izip
