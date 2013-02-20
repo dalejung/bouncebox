@@ -234,6 +234,57 @@ class Component(ListeningComponent):
             self.init_internal_router()
         self._internal_router.send(event)
 
+def component_mixin(base, mixin, override=[]):
+    """
+    Component based mixin. Called mixin for lack of a better term. 
+
+    Parameters
+    ----------
+    base : Component Class
+        Either the BaseComponent or some subclass. If not the BaseComponent, base will require
+        its own _init_hooks and listeners so we don't override the BaseComponent's
+    mixin : Class
+        Class to merge methods into. Without override, only methods that do not clash are added. 
+        Mixins are tracked by classname so we don't mix twice due to reload. 
+    override : list
+        List of attribute names to force setting on base. This is to override existing methods
+
+    Note:
+        The mixin.__init__ is called at the end of BaseComponent.__init__. At this point things like
+        add_component_hooks, listeners, broadcast_hooks will be available. 
+    """
+    mixin_name =  mixin.__name__
+    _mixins_ = getattr(base, '_mixins_', [])
+    if mixin_name in _mixins_:
+        print 'already ran'
+        return
+
+    _mixins_.append(mixin_name)
+
+    # note the methods in __dict__ are plain functions and not unbound methods
+    # they can be safely bound and used without self typecheck
+    attrs = [(key, attr) for key, attr in mixin.__dict__.items() 
+             if key in override or key not in ['listeners'] and not key.startswith('__')]
+
+    err_msg = 'Base must have its own {attr}. We might accidently modify ancestor'
+    if hasattr(mixin, 'listeners'):
+        assert 'listeners' in base.__dict__, err_msg.format(attr='listeners')
+        listeners = mixin.listeners
+        base.listeners.extend(listeners)
+
+    if hasattr(mixin, '__init__'):
+        assert '_init_hooks' in base.__dict__, err_msg.format(attr='_init_hooks')
+        init = mixin.__dict__['__init__'] # grab the non-method
+        base._init_hooks += init
+
+    mixed = []
+    for key, attr in attrs: 
+        if not hasattr(base, key) or key in override:
+            mixed.append(key)
+            setattr(base, key, attr)
+
+    setattr(base, '_mixins_', _mixins_)
+
 class Source(Component):
     def __init__(self):
         super(Source, self).__init__()
