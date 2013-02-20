@@ -30,12 +30,11 @@ class EventHook(object):
     def fire(self, *args, **kwargs):
         skip = kwargs.pop('skip',None)
         for handler in self.__handlers:
-            if handler.im_self == skip:
+            if hasattr(handler, 'im_self') and handler.im_self == skip:
                 continue
             try:
                 handler(*args, **kwargs)
             except:
-                print handler.im_self
                 raise
 
     def clearObjectHandlers(self, inObject):
