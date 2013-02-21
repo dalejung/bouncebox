@@ -264,18 +264,13 @@ class TestBounceBoxComponent(TestCase):
         # 02-21-13
         # Because sub components are always contained. It doesn't matter the order.
         # comp.front will always be parent. test is useless
-        return
         grandparent = bc.Component()
         parent = bc.Component()
         child = bc.Component()
 
-        try:
-            parent.add_component(child) 
-            grandparent.add_component(parent)
-        except: 
-            pass
-        else: 
-            assert False, "This should have errrored"
+        # this used to error. Now is fine
+        parent.add_component(child) 
+        grandparent.add_component(parent)
 
         grandparent = bc.Component()
         parent = bc.Component()

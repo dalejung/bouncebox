@@ -7,10 +7,10 @@ import bouncebox.core.component as bc
 import bouncebox.core.event as be
 import bouncebox.core.mixins as mixins
 
-class TestBase(bc.PreMixComponent):
+class TestBubbleDown(bc.PreMixComponent):
     pass
 
-mixins.component_mixin(TestBase, mixins.BubbleDownMixin)
+mixins.component_mixin(TestBubbleDown, mixins.BubbleDownMixin)
 
 class TestBubbleDownMixin(TestCase):
 
@@ -24,9 +24,9 @@ class TestBubbleDownMixin(TestCase):
         pass
 
     def test_bubble_down(self):
-        parent = TestBase()
-        mid = TestBase()
-        child = TestBase()
+        parent = TestBubbleDown()
+        mid = TestBubbleDown()
+        child = TestBubbleDown()
 
         child.add_event_listener(be.Event, 'handle_event')
         child.handle_event = MagicMock()
