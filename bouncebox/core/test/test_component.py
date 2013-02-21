@@ -178,12 +178,13 @@ class TestBounceBoxComponent(TestCase):
         child.handle_a2 = MagicMock()
 
         callbacks = child.get_event_callbacks()
-        assert len(callbacks) == 3
+        # Component now has a default bubble_down listener...
+        assert len(callbacks) == 4
         for e, c in callbacks:
             if e is TestEventA:
                 assert c in [child.handle_a, child.handle_a2]
             else:
-                assert c in [child.handle_b]
+                assert c in [child.handle_b, child.handle_bubble_down]
 
     def test_internal_router(self):
         """
