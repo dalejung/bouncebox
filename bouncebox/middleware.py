@@ -1,52 +1,6 @@
-import itertools
-
 from bouncebox.util import EventHook
 import bouncebox.core.api as core
-
-def _get_callbacks(component):
-    event_callbacks = component.get_event_callbacks()
-    series_bindings = component.get_series_bindings()
-    return event_callbacks, series_bindings
-
-class BubbleDownMixin(object):
-    listeners = [(core.Event, 'handle_bubble_down')]
-
-    def __init__(self):
-        self.child_event_callbacks = {}
-        self.child_series_bindings = {}
-
-        self.down_router = core.Router()
-
-    def add_bubble_down(self, component):
-        """
-            Adds component to the bubble_down list which means the parent
-            will pass on events from its own front router to the component. 
-            This in essense acts as if the child component is registered to
-            the parent.front.router
-        """
-        event_callbacks, series_bindings = _get_callbacks(component)
-        # keep track of child callbacks
-        self.child_event_callbacks[component] = event_callbacks
-        self.child_series_bindings[component] = series_bindings
-
-        # bind to the down_router
-        for k, callback in event_callbacks:
-            self.down_router.bind(k, callback, 'event')
-        for k, callback in series_bindings:
-            self.down_router.bind(k, callback, 'series')
-
-    def handle_bubble_down(self, event):
-        """
-            Event Handler for front.router events
-        """
-        self.bubble_down(event)
-
-    def bubble_down(self, event):
-        """
-            Takes an event and passes it to the children as if Middleware did 
-            not exist.
-        """
-        self.down_router.send(event)
+from bouncebox.core.mixins import BubbleDownMixin
 
 class MiddlewareMixin(BubbleDownMixin):
     """
@@ -119,6 +73,7 @@ class MiddlewareMixin(BubbleDownMixin):
         if self.up_filter:
             event = self.up_filter(event)
         self.broadcast(event)
+
 
 class Middleware(core.Component):
     # make sure our mixin only affects this specific class
