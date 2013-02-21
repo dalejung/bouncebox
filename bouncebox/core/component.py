@@ -97,12 +97,6 @@ class BaseComponent(PublishingElement):
         # note that front isn't always a bouncebox
         self.front.router.send(message)
 
-class MixinBase(BaseComponent):
-    pass
-
-# MIXIN
-# Add in mixins
-mixins.component_mixin(MixinBase, mixins.BubbleDownMixin)
 
 def add_component_hook(func):
     """
@@ -125,7 +119,7 @@ def _get_series(component, series):
         series = getattr(component, series)
     return series
 
-class SeriesComponent(MixinBase):
+class SeriesComponent(BaseComponent):
     """
     The part of a Component dealing with receiving/providing
     events and series. Specifically the series.
@@ -198,14 +192,14 @@ class ListeningComponent(SeriesComponent):
     def get_event_callbacks(self):
         return _get_event_callbacks(self)
 
-class Component(ListeningComponent):
+class PreMixComponent(ListeningComponent):
     repr_attrs = ['name']
     def __init__(self, name=None, log_broadcast=False):
         self.name = name
         self.log_broadcast = log_broadcast
         self.send_log = []
         self._internal_router_built = False
-        super(Component, self).__init__()
+        super(PreMixComponent, self).__init__()
 
     def broadcast(self, event):
         if self.log_broadcast:
@@ -241,6 +235,13 @@ class Component(ListeningComponent):
         if not self._internal_router_built:
             self.init_internal_router()
         self._internal_router.send(event)
+
+# MIXIN
+# Add in mixins
+class Component(PreMixComponent):
+    pass
+
+mixins.component_mixin(Component, mixins.BubbleDownMixin)
 
 class Source(Component):
     def __init__(self):
