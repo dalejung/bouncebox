@@ -1,3 +1,4 @@
+import sys
 from unittest import TestCase
 
 from mock import MagicMock
@@ -54,7 +55,11 @@ class TestBaseComponent(TestCase):
         comp = bc.BaseComponent()
         assert comp.ran_init
 
-        reload(bc) # get rid of changes
+        # remove handlers
+        for handler in bc.BaseComponent._init_hooks:
+            bc.BaseComponent._init_hooks.remove_handler(handler)
+
+        assert len(bc.BaseComponent._init_hooks) == 0
 
     def test_bind(self):
         comp = bc.BaseComponent()
