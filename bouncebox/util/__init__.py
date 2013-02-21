@@ -9,7 +9,7 @@ class Object(object):
         return base_repr(self, self.repr_attrs)
 
 class EventHook(object):
-
+    # not sure why I didn't just subclass list...
     def __init__(self):
         self.__handlers = []
 
@@ -48,6 +48,12 @@ class EventHook(object):
 
     def __repr__(self):
         return repr(self.__handlers)
+
+    def __iter__(self):
+        return iter(self.__handlers)
+
+    def __len__(self):
+        return len(self.__handlers)
 
 import uuid
 from itertools import izip
