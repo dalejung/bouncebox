@@ -55,6 +55,11 @@ class EventHook(object):
     def __len__(self):
         return len(self.__handlers)
 
+    def copy(self):
+        c = EventHook()
+        c.__handlers = self.__handlers[:]
+        return c
+
 import uuid
 from itertools import izip
 from operator import itemgetter
