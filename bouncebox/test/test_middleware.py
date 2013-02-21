@@ -4,7 +4,6 @@ from mock import MagicMock
 import bouncebox.core.api as bc
 import bouncebox.middleware as middleware
 import bouncebox.util.testing as testing
-reload(middleware)
 
 class TestMiddleWare(TestCase):
 
