@@ -263,18 +263,19 @@ def component_mixin(base, mixin, override=[]):
 
     # note the methods in __dict__ are plain functions and not unbound methods
     # they can be safely bound and used without self typecheck
-    attrs = [(key, attr) for key, attr in mixin.__dict__.items() 
+    mdict = mixin.__dict__
+    attrs = [(key, attr) for key, attr in mdict.items()
              if key in override or key not in ['listeners'] and not key.startswith('__')]
 
     err_msg = 'Base must have its own {attr}. We might accidently modify ancestor'
-    if hasattr(mixin, 'listeners'):
+    if 'listeners' in mdict:
         assert 'listeners' in base.__dict__, err_msg.format(attr='listeners')
-        listeners = mixin.listeners
+        listeners = mdict['listeners']
         base.listeners.extend(listeners)
 
-    if hasattr(mixin, '__init__'):
+    if '__init__' in mdict:
         assert '_init_hooks' in base.__dict__, err_msg.format(attr='_init_hooks')
-        init = mixin.__dict__['__init__'] # grab the non-method
+        init = mdict['__init__'] # grab the non-method
         base._init_hooks += init
 
     mixed = []
