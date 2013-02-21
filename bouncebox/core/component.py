@@ -70,8 +70,8 @@ class BaseComponent(PublishingElement):
         self.broadcast_hooks.fire(event)
 
     def add_component(self, component, contained=True):
-        if len(component.components) > 0:
-            raise Exception("Added a component that already has sub-components")
+        if not contained:
+            raise Exception("Defaulted to contained always True")
 
         # always contained
         component.front = self
