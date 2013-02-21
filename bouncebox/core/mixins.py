@@ -65,13 +65,13 @@ class BubbleDownMixin(object):
         Separated out the BubbleDown logic. Essentially this Mixin allows the parent
         Component to pass events from its front.router to selected children. 
     """
-    listeners = [(be.Event, 'handle_bubble_down')]
-
     def __init__(self):
         self.child_event_callbacks = {}
         self.child_series_bindings = {}
 
         self.down_router = dispatch.Router()
+        # TODO, make this lazy added based on whether enable_bubble_down is called
+        self.add_event_listener(be.Event, 'handle_bubble_down')
 
     def enable_bubble_down(self, component):
         """
