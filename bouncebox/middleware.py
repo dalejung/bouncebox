@@ -8,8 +8,47 @@ def _get_callbacks(component):
     series_bindings = component.get_series_bindings()
     return event_callbacks, series_bindings
 
-class MiddlewareMixin(object):
+class BubbleDownMixin(object):
     listeners = [(core.Event, 'handle_bubble_down')]
+
+    def __init__(self):
+        self.child_event_callbacks = {}
+        self.child_series_bindings = {}
+
+        self.down_router = core.Router()
+
+    def add_bubble_down(self, component):
+        """
+            Adds component to the bubble_down list which means the parent
+            will pass on events from its own front router to the component. 
+            This in essense acts as if the child component is registered to
+            the parent.front.router
+        """
+        event_callbacks, series_bindings = _get_callbacks(component)
+        # keep track of child callbacks
+        self.child_event_callbacks[component] = event_callbacks
+        self.child_series_bindings[component] = series_bindings
+
+        # bind to the down_router
+        for k, callback in event_callbacks:
+            self.down_router.bind(k, callback, 'event')
+        for k, callback in series_bindings:
+            self.down_router.bind(k, callback, 'series')
+
+    def handle_bubble_down(self, event):
+        """
+            Event Handler for front.router events
+        """
+        self.bubble_down(event)
+
+    def bubble_down(self, event):
+        """
+            Takes an event and passes it to the children as if Middleware did 
+            not exist.
+        """
+        self.down_router.send(event)
+
+class MiddlewareMixin(BubbleDownMixin):
     """
         Component that does passthrough for it's children. 
 
@@ -25,11 +64,7 @@ class MiddlewareMixin(object):
         A usecase may be to alter or prohibit events going to children
     """
     def __init__(self):
-        self.child_event_callbacks = {}
-        self.child_series_bindings = {}
         self.children = []
-
-        self.down_router = core.Router()
 
         self.down_filter = None
         self.up_filter = None
@@ -45,20 +80,8 @@ class MiddlewareMixin(object):
         """
         # we bubble up or rebroadcast child broadcasts
         component.broadcast = self.handle_bubble_up
-        self._init_bubble_down(component)
+        self.add_bubble_down(component)
         self.children.append(component)
-
-    def _init_bubble_down(self, component):
-        event_callbacks, series_bindings = _get_callbacks(component)
-        # keep track of child callbacks
-        self.child_event_callbacks[component] = event_callbacks
-        self.child_series_bindings[component] = series_bindings
-
-        # bind to the down_router
-        for k, callback in event_callbacks:
-            self.down_router.bind(k, callback, 'event')
-        for k, callback in series_bindings:
-            self.down_router.bind(k, callback, 'series')
 
     def add_component(self, component, *args, **kwargs):
         """
@@ -88,12 +111,6 @@ class MiddlewareMixin(object):
             event = self.down_filter(event)
         self.bubble_down(event)
 
-    def bubble_down(self, event):
-        """
-            Takes an event and passes it to the children as if Middleware did 
-            not exist.
-        """
-        self.down_router.send(event)
 
     def handle_bubble_up(self, event):
         """
@@ -110,4 +127,5 @@ class Middleware(core.Component):
     def __init__(self, *args, **kwargs):
         super(Middleware, self).__init__(*args, **kwargs)
 
-core.component_mixin(Middleware, MiddlewareMixin, override=['add_component'])
+core.component_mixin(Middleware, BubbleDownMixin)
+core.component_mixin(Middleware, MiddlewareMixin, override=['add_component', 'handle_bubble_down'])
