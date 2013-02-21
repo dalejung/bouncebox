@@ -45,20 +45,6 @@ def test_subscribe():
     pub.broadcast(evt2)
     sub.event_handler.assert_called_with(evt2)
 
-def test_add_component():
-    """
-        Adding a component to a super parent Component(not a bouncebox)
-
-        This will act pretty much like the super parent is a BounceBox
-    """
-    parent = bc.Component()
-    comp = bc.Component()
-    comp.handler = MagicMock()
-    comp.add_event_listener(be.Event, comp.handler)
-
-    parent.add_component(comp)
-    comp.broadcast(be.Event())
-
 def test_add_component_super_parent():
     """
     Adding a component to a super parent Component(not a bouncebox)
@@ -102,13 +88,12 @@ def test_add_component_box():
     """
     Adding a component to a Component that is inside a box
 
-    child.broadcast will send events to the parent.FRONT.router.
-    However, since listeners are registered during add_component,
-    the grand children are registered to the parent.router. The parent.router
-    doesnt' really do anything.
+    02-21-13
+    Changed this so child component broadcasts to parent.router. This acts
+    as if contained is always True
 
                         Router       Audience                
-    child.broadcast     front(box)  cousins(front.router)   
+    child.broadcast     parent      siblings(parent.router)   
     parent.broadcast    front(box)  cousins(front.router)
     box.broadcast       self        all components connected to its router
 
@@ -141,95 +126,18 @@ def test_add_component_box():
 
     # a grandchild broadcasting will go to the front.router
     source.broadcast(evt)
-    assert len(parent.router.logs) == 0
-    assert box.router.logs[0] is evt
-
-    # However, grandchild listeners are not registered to box.front
-    assert comp.handler.call_count == 0
-    # child of box listeners are properly handled
-    box_child.handler.assert_called_once_with(evt)
-
-    evt2 = be.Event()
-    parent.broadcast(evt2)
-    # super parent is own front
-    assert parent.front is box
-    # When parent is child of box. It will broadcast to the BOX.router
-    assert len(parent.router.logs) == 0
-    assert box.router.logs[1] is evt2
-
-def test_add_component_box_contained():
-    """
-    Adding a component with contained keyword to a Component that is inside a box
-
-    This makes the contained children act like they are in their own little world. 
-    The parent essentially becomes a box. 
-    However, the parent still acts like a child of the box. It doesn't automatically
-    interact with its own router.
-
-                            Router       Audience                
-    free_child.broadcast    front(box)   siblings(parent.router)   
-    contained.broadcast     parent       siblings(parent.router)   
-    parent.broadcast        front(box)   cousins(parent.router)
-    box.broadcast           self         all components connected to its router
-
-                            Router
-    child.listeners         parent.router 
-
-    """
-    box = bbox.BounceBox()
-    parent = bc.Component()
-    source = bc.Component()
-    comp = bc.Component()
-    comp.handler = MagicMock()
-    comp.add_event_listener(be.Event, comp.handler)
-    free_child = bc.Component()
-    free_child.handler = MagicMock()
-    free_child.add_event_listener(be.Event, free_child.handler)
-    box_child = bc.Component()
-    box_child.handler = MagicMock()
-    box_child.add_event_listener(be.Event, box_child.handler)
-    parent.handler = MagicMock()
-    parent.add_event_listener(be.Event, parent.handler)
-
-    box.add_component(parent)
-    box.add_component(box_child)
-    parent.add_component(comp, contained=True)
-    parent.add_component(source, contained=True)
-    parent.add_component(free_child)
-    # router logging
-    parent.router.start_logging()
-    box.router.start_logging()
-
-    evt = be.Event()
-
-    # contained child will broadcast to its parents router
-    source.broadcast(evt)
     assert parent.router.logs[0] is evt
     assert len(box.router.logs) == 0
 
-    # this means that the sibling component listeners will be called
-    # since they exist on the same router
+    # sibling gets called
     comp.handler.assert_called_once_with(evt)
-    # the grandchild broadcast never reach the box. So box_child is not called
+    # since parent.router is used. box_child should not be called
     assert box_child.handler.call_count == 0
-    # non contained children also get events since their listeners are connected
-    # to parent.router
-    free_child.handler.assert_called_once_with(evt)
 
     evt2 = be.Event()
-    # parent still acts like a box child.
     parent.broadcast(evt2)
-    # parent.front is STILL box
     assert parent.front is box
-    # When parent is child of box. It will broadcast to the BOX.router
-    assert evt2 not in parent.router.logs # does not broad to own box
-    assert box.router.logs[0] is evt2 # parent broadcasted to box
-    parent.handler.assert_called_once_with(evt2) # parent got its own event back
-
-    evt3 = be.Event()
-    free_child.broadcast(evt3)
-    assert box.router.logs[1] is evt3 # free child still broadcast to front box
-    parent.handler.assert_called_with(evt3)
+    assert box.router.logs[0] is evt2
 
 def test_middleware():
     """"

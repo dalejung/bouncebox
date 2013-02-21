@@ -65,28 +65,27 @@ class TestBaseComponent(TestCase):
         comp = bc.BaseComponent()
         child = LoggingChild()
         grandchild = LoggingChild()
-        in_jail = LoggingChild()
+
+        # log routers
+        child.router.start_logging()
+        comp.router.start_logging()
+
         comp.add_component(child)
+        child.add_component(grandchild)
+
         # test binding
         comp.bind(be.Event, child.handle_event)
         evt = be.Event()
         comp.broadcast(evt)
         assert child.logs[0] is evt
 
-        # assert that all events to through central broker
-        child.add_component(grandchild)
-        evt2 = be.Event()
-        grandchild.broadcast(evt2)
-        assert child.logs[1] is evt2
-
-        assert grandchild.front is child.front 
-        assert grandchild.front is comp
-
-        # when a sub component is contained, it uses the parent component and NOT the front
-        child.add_component(in_jail, contained=True)
-        in_jail.broadcast(be.Event())
-        assert len(child.logs) == 2 # a contained component only broadcasts to parent router
-        assert in_jail.front is child
+        # grandchild should broadcast to child router and not comp.router
+        child.bind(be.Event, child.handle_event) # have child listen to its own router
+        evt3 = be.Event()
+        grandchild.broadcast(evt3)
+        assert child.logs[1] is evt3
+        assert child.router.logs[0] is evt3
+        assert evt3 not in comp.router.logs
 
 class TestSeriesComponent(TestCase):
 

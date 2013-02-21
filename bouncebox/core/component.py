@@ -1,4 +1,3 @@
-from collections import Iterable
 import functools
 
 from bouncebox.core.event import EndEvent
@@ -70,13 +69,12 @@ class BaseComponent(PublishingElement):
     def broadcast(self, event):
         self.broadcast_hooks.fire(event)
 
-    def add_component(self, component, contained=False):
+    def add_component(self, component, contained=True):
         if len(component.components) > 0:
             raise Exception("Added a component that already has sub-components")
 
-        component.front = self.front
-        if contained:
-            component.front = self
+        # always contained
+        component.front = self
 
         self.components.append(component)
         self.add_component_hooks.fire(component)
@@ -193,6 +191,9 @@ class ListeningComponent(SeriesComponent):
         return _get_event_callbacks(self)
 
 class PreMixComponent(ListeningComponent):
+    """
+    Unmixed class.
+    """
     repr_attrs = ['name']
     def __init__(self, name=None, log_broadcast=False):
         self.name = name
