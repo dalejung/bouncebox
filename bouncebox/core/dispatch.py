@@ -119,6 +119,17 @@ class BounceBoxRouter(BaseRouter):
         else:
             self.queue.append(message)
 
+    def __repr__(self):
+        out = []
+        out.append('EventDispatcher:')
+        for k, v in self.event_dispatcher.callback_registry.items():
+            out.append(str(k))
+            out.extend(['\t' + str(callback) for callback in v])
+        out.append('SeriesDispatcher:')
+        for k, v in self.series_dispatcher.callback_registry.items():
+            out.append(str(k))
+            out.extend(['\t' + str(callback) for callback in v])
+        return '\n'.join(out)
 
 Router = BounceBoxRouter
 
