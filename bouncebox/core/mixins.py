@@ -24,7 +24,7 @@ def component_mixin(base, mixin, override=[]):
     _mixins_ = getattr(base, '_mixins_', [])[:] # copy so we don't modify ancestor
     if mixin_name in _mixins_:
         print '{mixin_name} already mixed'.format(mixin_name=mixin_name)
-        return
+        return False
 
     _mixins_.append(mixin_name)
 
@@ -53,6 +53,7 @@ def component_mixin(base, mixin, override=[]):
             setattr(base, key, attr)
 
     setattr(base, '_mixins_', _mixins_)
+    return True
 
 def _get_callbacks(component):
     event_callbacks = component.get_event_callbacks()
@@ -94,7 +95,7 @@ class BubbleDownMixin(object):
         """
             Event Handler for front.router events
         """
-        self.bubble_down(event)
+        self.down_router.send(event)
 
     def bubble_down(self, event):
         """
