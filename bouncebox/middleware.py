@@ -34,7 +34,7 @@ class MiddlewareMixin(BubbleDownMixin):
         """
         # we bubble up or rebroadcast child broadcasts
         component.broadcast = self.handle_bubble_up
-        self.add_bubble_down(component)
+        self.enable_bubble_down(component)
         self.children.append(component)
 
     def add_component(self, component, *args, **kwargs):
@@ -77,8 +77,6 @@ class MiddlewareMixin(BubbleDownMixin):
 
 class Middleware(core.Component):
     # make sure our mixin only affects this specific class
-    _init_hooks = EventHook()
-    listeners = []
     def __init__(self, *args, **kwargs):
         super(Middleware, self).__init__(*args, **kwargs)
 

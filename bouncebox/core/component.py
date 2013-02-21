@@ -4,6 +4,7 @@ import functools
 from bouncebox.core.event import EndEvent
 from bouncebox.core.element import PublishingElement
 from bouncebox.core.dispatch import Router
+import bouncebox.core.mixins as mixins
 
 from bouncebox.util import generate_id, EventHook
 
@@ -96,6 +97,13 @@ class BaseComponent(PublishingElement):
         # note that front isn't always a bouncebox
         self.front.router.send(message)
 
+class MixinBase(BaseComponent):
+    pass
+
+# MIXIN
+# Add in mixins
+mixins.component_mixin(MixinBase, mixins.BubbleDownMixin)
+
 def add_component_hook(func):
     """
         Ideally this decorator will take a method and add it 
@@ -117,7 +125,7 @@ def _get_series(component, series):
         series = getattr(component, series)
     return series
 
-class SeriesComponent(BaseComponent):
+class SeriesComponent(MixinBase):
     """
     The part of a Component dealing with receiving/providing
     events and series. Specifically the series.

@@ -21,9 +21,9 @@ def component_mixin(base, mixin, override=[]):
         add_component_hooks, listeners, broadcast_hooks will be available. 
     """
     mixin_name =  mixin.__name__
-    _mixins_ = getattr(base, '_mixins_', [])
+    _mixins_ = getattr(base, '_mixins_', [])[:] # copy so we don't modify ancestor
     if mixin_name in _mixins_:
-        print 'already ran'
+        print '{mixin_name} already mixed'.format(mixin_name=mixin_name)
         return
 
     _mixins_.append(mixin_name)
@@ -34,16 +34,17 @@ def component_mixin(base, mixin, override=[]):
     attrs = [(key, attr) for key, attr in mdict.items()
              if key in override or key not in ['listeners'] and not key.startswith('__')]
 
-    err_msg = 'Base must have its own {attr}. We might accidently modify ancestor'
     if 'listeners' in mdict:
-        assert 'listeners' in base.__dict__, err_msg.format(attr='listeners')
         listeners = mdict['listeners']
-        base.listeners.extend(listeners)
+        base_listeners = base.listeners[:] # make copy
+        base_listeners.extend(listeners)
+        setattr(base, 'listeners', base_listeners)
 
     if '__init__' in mdict:
-        assert '_init_hooks' in base.__dict__, err_msg.format(attr='_init_hooks')
         init = mdict['__init__'] # grab the non-method
-        base._init_hooks += init
+        base_inits = base._init_hooks.copy()
+        base_inits += init
+        setattr(base, '_init_hooks', base_inits)
 
     mixed = []
     for key, attr in attrs: 
@@ -71,7 +72,7 @@ class BubbleDownMixin(object):
 
         self.down_router = dispatch.Router()
 
-    def add_bubble_down(self, component):
+    def enable_bubble_down(self, component):
         """
             Adds component to the bubble_down list which means the parent
             will pass on events from its own front router to the component. 
