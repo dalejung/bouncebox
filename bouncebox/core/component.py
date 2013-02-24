@@ -56,6 +56,10 @@ class BaseComponent(PublishingElement):
         self.router = Router()
         self._internal_router = Router()
 
+        # This was init because I couldn't figure out how to append to a cls variable
+        # in the subclass definitions. The mixin can do it, but I'd need a metaclass
+        # to do it for the Series and Listening Component
+        # also was done to bind to self
         self.add_component_hooks = EventHook()
         self.components = []
 
@@ -69,7 +73,7 @@ class BaseComponent(PublishingElement):
     def broadcast(self, event):
         self.broadcast_hooks.fire(event)
 
-    def add_component(self, component, contained=True):
+    def add_component(self, component, contained=True, **kwargs):
         if not contained:
             raise Exception("Defaulted to contained always True")
 
@@ -77,8 +81,9 @@ class BaseComponent(PublishingElement):
         component.front = self
 
         self.components.append(component)
-        self.add_component_hooks.fire(component)
-        self.cls_add_component_hooks.fire(component)
+        self.add_component_hooks.fire(component, **kwargs)
+        # TODO add check to see if hook is unbound. Which I think it will always be
+        self.cls_add_component_hooks.fire(self, component, **kwargs)
 
         # shortcut for end and start
         end_func = getattr(component, 'end', None)
@@ -132,7 +137,7 @@ class SeriesComponent(BaseComponent):
         self.add_component_hooks += self.bind_series
 
     @add_component_hook
-    def bind_series(self, component, controller=None):
+    def bind_series(self, component, controller=None, *args, **kwargs):
         bindings = component.get_series_bindings()
 
         if controller is None:
@@ -171,7 +176,7 @@ class ListeningComponent(SeriesComponent):
         self.obj_listeners.append((event_type, callback))
 
     @add_component_hook
-    def bind_callbacks(self, component, controller=None):
+    def bind_callbacks(self, component, controller=None, *args, **kwargs):
         """ 
         bind router callbacks. default to using parents
         router, parameterized so we can pass front in 

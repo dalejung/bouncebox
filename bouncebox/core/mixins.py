@@ -46,6 +46,12 @@ def component_mixin(base, mixin, override=[]):
         base_inits += init
         setattr(base, '_init_hooks', base_inits)
 
+    if 'mixin_add_component_hook' in mdict:
+        hook = mdict['mixin_add_component_hook'] 
+        base_hooks = base.cls_add_component_hooks.copy()
+        base_hooks += hook
+        setattr(base, 'cls_add_component_hooks', base_hooks)
+
     mixed = []
     for key, attr in attrs: 
         if not hasattr(base, key) or key in override:
@@ -103,3 +109,7 @@ class BubbleDownMixin(object):
             not exist.
         """
         self.down_router.send(event)
+
+    def mixin_add_component_hook(self, *args, **kwargs):
+        pass
+

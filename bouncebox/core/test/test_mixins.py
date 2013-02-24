@@ -180,6 +180,37 @@ class TestComponentMixin(TestCase):
         mixins.component_mixin(base, TestMixin3, override=['dupe_method'])
         assert test.dupe_method() == 3
 
+    def test_component_mixin_add_component_hooks(self):
+        """
+        Allow Mixins to define cls_add_component_hooks
+        """
+        class TestBase(bc.PreMixComponent):
+            pass
+        base = TestBase
+        class TestMixin(object):
+            def mixin_add_component_hook(self, *args, **kwargs):
+                self.mixin1 = True
+                self.last_call = kwargs
+
+        class TestMixin2(object):
+            def mixin_add_component_hook(self, *args, **kwargs):
+                self.mixin2 = True
+                self.last_call2 = kwargs
+
+        mixins.component_mixin(base, TestMixin)
+        mixins.component_mixin(base, TestMixin2)
+        test = base('parent')
+        child = base('child')
+        assert len(test.cls_add_component_hooks) == 2
+        test.add_component(child, test_param=123)
+        # make sure both ac hooks run
+        assert test.last_call['test_param'] == 123
+        assert test.last_call2['test_param'] == 123
+        assert test.mixin1
+        assert test.mixin2
+
+
+
 if __name__ == '__main__':
     import nose                                                                      
     nose.runmodule(argv=[__file__,'-s','-x','--pdb', '--pdb-failure'],exit=False)   
