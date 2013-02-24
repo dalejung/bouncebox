@@ -41,6 +41,47 @@ class TestBubbleDownMixin(TestCase):
         # middle ware should have progated events to child
         child.handle_event.assert_called_once_with(evt)
 
+    def test_bubble_down_hook(self):
+        """
+            Test the bubble_down keyword for add_component
+        """
+        parent = TestBubbleDown()
+        mid = TestBubbleDown()
+        child = TestBubbleDown()
+
+        child.add_event_listener(be.Event, 'handle_event')
+        child.handle_event = MagicMock()
+
+        # We have an order issue
+        parent.add_component(mid)
+        mid.add_component(child, bubble_down=True)
+
+        evt = be.Event()
+        parent.broadcast(evt)
+        # middle ware should have progated events to child
+        child.handle_event.assert_called_once_with(evt)
+
+    def test_bubble_down_hook_error(self):
+        """
+        Test that you can only enable_bubble_down once
+        """
+        parent = TestBubbleDown()
+        mid = TestBubbleDown()
+        child = TestBubbleDown()
+
+        child.add_event_listener(be.Event, 'handle_event')
+        child.handle_event = MagicMock()
+
+        # We have an order issue
+        parent.add_component(mid)
+        mid.add_component(child, bubble_down=True)
+        try:
+            mid.enable_bubble_down(child)
+        except:
+            pass
+        else:
+            assert False, "This should error"
+
 class TestComponentMixin(TestCase):
 
     def __init__(self, *args, **kwargs):

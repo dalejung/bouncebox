@@ -72,6 +72,7 @@ class BubbleDownMixin(object):
         Component to pass events from its front.router to selected children. 
     """
     def __init__(self):
+        self.bubble_down_children = []
         self.child_event_callbacks = {}
         self.child_series_bindings = {}
 
@@ -86,6 +87,9 @@ class BubbleDownMixin(object):
             This in essense acts as if the child component is registered to
             the parent.front.router
         """
+        if component in self.bubble_down_children:
+            raise Exception("Attempting to enable_bubble_down twice on same component")
+        self.bubble_down_children.append(component)
         event_callbacks, series_bindings = _get_callbacks(component)
         # keep track of child callbacks
         self.child_event_callbacks[component] = event_callbacks
@@ -110,6 +114,8 @@ class BubbleDownMixin(object):
         """
         self.down_router.send(event)
 
-    def mixin_add_component_hook(self, *args, **kwargs):
-        pass
+    def mixin_add_component_hook(self, component, *args, **kwargs):
+        bubble_down = kwargs.pop('bubble_down', False)
+        if bubble_down:
+            self.enable_bubble_down(component)
 
