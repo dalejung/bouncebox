@@ -113,7 +113,7 @@ def install_ipython_completers():  # pragma: no cover
     """Register the DataFrame type with IPython's tab completion machinery, so
     that it knows about accessing column names as attributes."""
     from IPython.utils.generics import complete_object
-    from pandas.util import py3compat
+    from pandas.compat import py3compat
 
     @complete_object.when_type(Logger)
     def complete_logger(obj, prev_completions):
