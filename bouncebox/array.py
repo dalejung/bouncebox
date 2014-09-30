@@ -31,10 +31,13 @@ class EventBroadcaster(core.Component):
         except StopIteration:
             return False
 
-    def next(self):
+    def __next__(self):
         """ Iterator Interface"""
         event = next(self.iter)
         return event
 
+    next = __next__
+
     def __iter__(self):
         return iter(self.iter)
+

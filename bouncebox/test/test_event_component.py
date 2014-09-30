@@ -82,7 +82,7 @@ def test_add_component_super_parent():
     # super parent is own front
     assert parent.front is parent
     # parent.broadcast goes to its own router
-    print parent.router.logs[1] is evt2
+    print((parent.router.logs[1] is evt2))
 
 def test_add_component_box():
     """

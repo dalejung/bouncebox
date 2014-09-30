@@ -7,7 +7,7 @@ class Yapper(core.Component):
         super(Yapper, self).__init__()
 
     def handle_events(self, event):
-        print(self.prefix, event)
+        print((self.prefix, event))
 
 class SeriesYapper(core.Component):
     series_bindings = [("series", 'handle_events')]
@@ -17,7 +17,7 @@ class SeriesYapper(core.Component):
         super(SeriesYapper, self).__init__()
 
     def handle_events(self, event):
-        print(self.prefix, event)
+        print((self.prefix, event))
 
 class EventYapper(core.Component):
     listeners = [("event_cls", 'handle_events')]
@@ -27,4 +27,4 @@ class EventYapper(core.Component):
         super(EventYapper, self).__init__()
 
     def handle_events(self, event):
-        print(self.prefix, event)
+        print((self.prefix, event))

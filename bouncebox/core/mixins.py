@@ -23,7 +23,7 @@ def component_mixin(base, mixin, override=[]):
     mixin_name =  mixin.__name__
     _mixins_ = getattr(base, '_mixins_', [])[:] # copy so we don't modify ancestor
     if mixin_name in _mixins_:
-        print '{mixin_name} already mixed'.format(mixin_name=mixin_name)
+        print(('{mixin_name} already mixed'.format(mixin_name=mixin_name)))
         return False
 
     _mixins_.append(mixin_name)

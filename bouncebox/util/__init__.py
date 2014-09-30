@@ -61,7 +61,6 @@ class EventHook(object):
         return c
 
 import uuid
-from itertools import izip
 from operator import itemgetter
 from collections import namedtuple
 

@@ -24,7 +24,7 @@ class BounceBox(Component):
             interactive: starts prompt
         """
         if len(self.sources) == 0:
-           print "No Sources Attached. Exiting..."
+           print("No Sources Attached. Exiting...")
            return
 
         self.start_hooks.fire(StartEvent())
@@ -38,14 +38,14 @@ class BounceBox(Component):
             try:
                 self.send_next()
             except EndOfSources:
-                print 'Done Running Sources'
+                print('Done Running Sources')
                 break
 
     def start_interactive(self):
-        print """ Interactive Mode 
+        print(""" Interactive Mode 
             Press Enter for one iteration
             Press a number for that many iterations
-            Type stop to end session"""
+            Type stop to end session""")
         while True:
             key = raw_input('\nNext ')
             if key == 'stop':
@@ -55,7 +55,7 @@ class BounceBox(Component):
             try:
                 key = int(key)
             except:
-                print 'Input is wrong'
+                print('Input is wrong')
                 continue
             for x in range(key):
                 self.send_next()
@@ -71,7 +71,7 @@ class BounceBox(Component):
         while 1:
             yield self.send_next()
 
-    def next(self):
+    def __next__(self):
         """
             Out of multiple sources this will send the next
             of chronological order
@@ -86,6 +86,8 @@ class BounceBox(Component):
             # send End event
             self.end_box()
             raise EndOfSources
+
+    next = __next__
 
     def __iter__(self):
         return self

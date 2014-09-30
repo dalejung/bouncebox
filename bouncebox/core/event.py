@@ -42,7 +42,7 @@ class Event(Object):
 try: 
     from bouncebox.core.event_cython import Event
 except:
-    print 'No cython Event'
+    print('No cython Event')
 
 class SourceEvent(Event):
     """
